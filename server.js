@@ -86,6 +86,41 @@ const getDreamAnalysis = async (dreamId) => {
   }
 };
 
+const getDreamSummary = async (dreamEntry) => {
+  try {
+    const response = await axios.post(openai_chat_url, {
+      model: 'gpt-4',
+      messages: [
+        {
+          role: 'system',
+          content: 'Please summarize the following text to be used as the perfect DALLE 2 openai prompt:',
+        },
+        {
+          role: 'user',
+          content: dreamEntry,
+        },
+      ],
+      max_tokens: 60, // Adjust this value based on how short you want the summary to be
+    }, {
+      headers: {
+        'Authorization': `Bearer ${openai_api_key}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const choices = response.data.choices;
+    if (choices && choices.length > 0) {
+      const aiResponse = choices[0].message.content.trim();
+      return aiResponse;
+    } else {
+      return 'Error: Unable to generate a summary.';
+    }
+  } catch (error) {
+    console.error('Error generating GPT summary:', error);
+    return 'Error: Unable to generate a summary.';
+  }
+};
+
 const getDreamImage = async (dreamId) => {
   try {
     const dream = dreams.find((d) => d.id === dreamId);
@@ -93,11 +128,23 @@ const getDreamImage = async (dreamId) => {
       return null;
     }
 
-    const imageData = await getImageResponse(dream.entry);
+    const summary = await getDreamSummary(dream.entry);
+
+    const data = {
+      prompt: `${summary}, high quality, digital art, photorealistic style, very detailed, lucid dream themed`,
+      n: 1,
+      size: '1024x1024',
+    };
+    const headers = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${openai_api_key}`,
+    };
+    const response = await axios.post(openai_image_url, data, { headers });
+    const imageData = response.data.data[0];
     return imageData;
   } catch (error) {
     console.error('Error generating dream-inspired image:', error);
-    return null;
+    throw error;
   }
 };
 
@@ -115,7 +162,7 @@ const getGptResponse = async (prompt, systemContent) => {
           content: prompt,
         },
       ],
-      max_tokens: 150,
+      max_tokens: 333,
     }, {
       headers: {
         'Authorization': `Bearer ${openai_api_key}`,
@@ -133,26 +180,6 @@ const getGptResponse = async (prompt, systemContent) => {
   } catch (error) {
     console.error('Error generating GPT response:', error);
     return 'Error: Unable to generate a response.';
-  }
-};
-
-const getImageResponse = async (prompt) => {
-  try {
-    const data = {
-      prompt: `${prompt}, high quality, digital art, photorealistic style, very detailed, runescape themed`,
-      n: 1,
-      size: '1024x1024',
-    };
-    const headers = {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${openai_api_key}`,
-    };
-    const response = await axios.post(openai_image_url, data, { headers });
-    const imageData = response.data.data[0];
-    return imageData;
-  } catch (error) {
-    console.error('Error generating dream-inspired image:', error);
-    throw error;
   }
 };
 
