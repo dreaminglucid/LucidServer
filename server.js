@@ -8,13 +8,15 @@ const openai = require('openai');
 const app = express();
 const port = 5000;
 
+require('dotenv').config();
+
 app.use(cors());
 app.use(express.json());
 
 const dreamsFilePath = path.join(__dirname, 'dreams.json');
 let dreams = [];
 
-const openai_api_key = "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";
+const openai_api_key = process.env.OPENAI_API_KEY;
 const openai_chat_url = "https://api.openai.com/v1/chat/completions";
 const openai_image_url = "https://api.openai.com/v1/images/generations";
 
