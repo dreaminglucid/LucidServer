@@ -1,6 +1,6 @@
+// server.js
 const express = require('express');
 const cors = require('cors');
-const openai = require('./openai');
 const database = require('./database');
 
 const app = express();
@@ -10,8 +10,6 @@ require('dotenv').config();
 
 app.use(cors());
 app.use(express.json());
-
-database.readDreamsFromFile();
 
 app.post('/api/dreams', async (req, res) => {
   const { title, date, entry } = req.body;
@@ -23,10 +21,11 @@ app.post('/api/dreams', async (req, res) => {
   }
 });
 
-app.put('/api/dreams/:dreamId', (req, res) => {
+app.put('/api/dreams/:dreamId', async (req, res) => {
   const dreamId = parseInt(req.params.dreamId);
   const { analysis, image } = req.body;
-  const updatedDream = database.updateDreamAnalysisAndImage(dreamId, analysis, image);
+  // server.js continued...
+  const updatedDream = await database.updateDreamAnalysisAndImage(dreamId, analysis, image);
   if (updatedDream !== null) {
     res.status(200).json(updatedDream);
   } else {
@@ -34,14 +33,15 @@ app.put('/api/dreams/:dreamId', (req, res) => {
   }
 });
 
-app.get('/api/dreams', (req, res) => {
-  const allDreams = database.getDreams();
+app.get('/api/dreams', async (req, res) => {
+  const allDreams = await database.getDreams();
   res.status(200).json(allDreams);
 });
 
-app.get('/api/dreams/:dreamId', (req, res) => {
+app.get('/api/dreams/:dreamId', async (req, res) => {
   const dreamId = parseInt(req.params.dreamId);
-  const dream = database.getDreams().find((d) => d.id === dreamId);
+  const allDreams = await database.getDreams();
+  const dream = allDreams.find((d) => d.id === dreamId);
   if (dream) {
     res.status(200).json(dream);
   } else {
@@ -61,12 +61,11 @@ app.get('/api/dreams/:dreamId/analysis', async (req, res) => {
 
 app.get('/api/dreams/:dreamId/image', async (req, res) => {
   const dreamId = parseInt(req.params.dreamId);
-  const dreams = database.getDreams(); // Pass dreams array to getDreamImage function
-  const imageData = await openai.getDreamImage(dreams, dreamId);
-  if (imageData !== null) {
-    res.status(200).json(imageData);
+  const dream = database.getDreams().find((d) => d.id === dreamId);
+  if (dream && dream.image) {
+    res.status(200).json({ image: dream.image });
   } else {
-    res.status(404).json({ error: 'Dream not found' });
+    res.status(404).json({ error: 'Dream image not found' });
   }
 });
 

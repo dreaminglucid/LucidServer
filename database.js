@@ -1,43 +1,62 @@
 // database.js
-const fs = require('fs');
-const path = require('path');
 const openai = require('./openai');
-const { OpenAIEmbeddingFunction } = require('chromadb');
+const { OpenAIEmbeddingFunction, ChromaClient } = require('chromadb');
 
 // Initialize the OpenAIEmbeddingFunction
 const embeddingFunction = new OpenAIEmbeddingFunction({ openai_api_key: process.env.OPENAI_API_KEY });
 
-const dreamsFilePath = path.join(__dirname, 'dreams.json');
+// Initialize the ChromaClient
+const client = new ChromaClient('http://localhost:8000');
+
+(async () => {
+  try {
+    let collection = await client.getCollection({ name: 'dreams', embeddingFunction });
+    if (!collection) {
+      await client.createCollection({ name: 'dreams', embeddingFunction });
+    }
+  } catch (error) {
+    console.error('Error initializing dreams collection:', error);
+  }
+})();
+
 let dreams = [];
-
-const readDreamsFromFile = () => {
-  try {
-    const fileContent = fs.readFileSync(dreamsFilePath, 'utf-8');
-    dreams = JSON.parse(fileContent);
-  } catch (error) {
-    console.error('Error reading dreams from file:', error);
-    dreams = [];
-  }
-};
-
-const writeDreamsToFile = () => {
-  try {
-    fs.writeFileSync(dreamsFilePath, JSON.stringify(dreams, null, 2), 'utf-8');
-  } catch (error) {
-    console.error('Error writing dreams to file:', error);
-  }
-};
 
 const createDream = async (title, date, entry) => {
   try {
     const embeddings = await embeddingFunction.generate([entry]); // Generate embeddings for the dream entry
-    const dream = { id: dreams.length + 1, title, date, entry, analysis: '', image: null, embeddings: embeddings[0] };
+    const dream = { id: dreams.length + 1, title, date, entry, embeddings: embeddings[0] };
     dreams.push(dream);
-    writeDreamsToFile();
+
+    const collection = await client.getCollection({ name: 'dreams', embeddingFunction });
+    if (!collection) {
+      throw new Error('Failed to initialize dreams collection');
+    }
+    // Use upsert method to add or update the dream in the collection
+    await collection.upsert({ ids: [dream.id.toString()], embeddings: [dream.embeddings], documents: [JSON.stringify(dream)] });
+
     return dream;
   } catch (error) {
     console.error('Error saving dream:', error);
     return null;
+  }
+};
+
+const getDreams = async () => {
+  try {
+    const collection = await client.getCollection({ name: 'dreams', embeddingFunction });
+    if (!collection) {
+      throw new Error('Failed to initialize dreams collection');
+    }
+    const results = await collection.get({ include: ['embeddings', 'metadatas', 'documents'] });
+    console.log('getDreams results:', results); // Add this line
+    if (results.documents) {
+      return results.documents.map(doc => doc ? JSON.parse(doc) : null);
+    } else {
+      throw new Error('No dreams found');
+    }
+  } catch (error) {
+    console.error('Error getting dreams:', error);
+    return [];
   }
 };
 
@@ -55,16 +74,15 @@ const updateDreamAnalysisAndImage = async (dreamId, analysis, image) => {
     const embeddings = await embeddingFunction.generate([dream.entry]);
     dream.embeddings = embeddings[0];
 
-    writeDreamsToFile();
+    // Update the collection in ChromaDB for the updated dream
+    const collection = await client.getCollection({ name: `dream_${dream.id}`, embeddingFunction });
+    await collection.upsert({ ids: [dream.id.toString()], embeddings: [dream.embeddings], documents: [dream] });
+
     return dream;
   } catch (error) {
     console.error('Error updating dream analysis and image:', error);
     return null;
   }
-};
-
-const getDreams = () => {
-  return dreams;
 };
 
 const getDreamAnalysis = async (dreamId) => {
@@ -83,8 +101,6 @@ const getDreamAnalysis = async (dreamId) => {
 };
 
 module.exports = {
-  readDreamsFromFile,
-  writeDreamsToFile,
   createDream,
   updateDreamAnalysisAndImage,
   getDreams,
