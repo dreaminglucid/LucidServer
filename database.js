@@ -2,6 +2,10 @@
 const fs = require('fs');
 const path = require('path');
 const openai = require('./openai');
+const { OpenAIEmbeddingFunction } = require('chromadb');
+
+// Initialize the OpenAIEmbeddingFunction
+const embeddingFunction = new OpenAIEmbeddingFunction({ openai_api_key: process.env.OPENAI_API_KEY });
 
 const dreamsFilePath = path.join(__dirname, 'dreams.json');
 let dreams = [];
@@ -24,9 +28,10 @@ const writeDreamsToFile = () => {
   }
 };
 
-const createDream = (title, date, entry) => {
+const createDream = async (title, date, entry) => {
   try {
-    const dream = { id: dreams.length + 1, title, date, entry, analysis: '', image: null };
+    const embeddings = await embeddingFunction.generate([entry]); // Generate embeddings for the dream entry
+    const dream = { id: dreams.length + 1, title, date, entry, analysis: '', image: null, embeddings: embeddings[0] };
     dreams.push(dream);
     writeDreamsToFile();
     return dream;
@@ -36,7 +41,7 @@ const createDream = (title, date, entry) => {
   }
 };
 
-const updateDreamAnalysisAndImage = (dreamId, analysis, image) => {
+const updateDreamAnalysisAndImage = async (dreamId, analysis, image) => {
   try {
     const dream = dreams.find((d) => d.id === dreamId);
     if (!dream) {
@@ -45,6 +50,11 @@ const updateDreamAnalysisAndImage = (dreamId, analysis, image) => {
 
     dream.analysis = analysis;
     dream.image = image;
+
+    // Update the embeddings after updating the dream analysis
+    const embeddings = await embeddingFunction.generate([dream.entry]);
+    dream.embeddings = embeddings[0];
+
     writeDreamsToFile();
     return dream;
   } catch (error) {
