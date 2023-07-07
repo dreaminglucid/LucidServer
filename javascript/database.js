@@ -29,8 +29,12 @@ const createDream = async (title, date, entry) => {
 
     const collection = await client.getCollection({ name: 'dreams', embeddingFunction });
     if (!collection) {
-      throw new Error('Failed to initialize dreams collection');
+      await client.createCollection({ name: 'dreams', embeddingFunction });
     }
+
+    // Update the collection reference after creating or getting it
+    collection = await client.getCollection({ name: 'dreams', embeddingFunction });
+
     // Use upsert method to add or update the dream in the collection
     await collection.upsert({ ids: [dream.id.toString()], embeddings: [dream.embeddings], documents: [JSON.stringify(dream)] });
 
@@ -49,8 +53,8 @@ const getDreams = async () => {
     }
     const results = await collection.get({ include: ['embeddings', 'metadatas', 'documents'] });
     console.log('getDreams results:', results); // Add this line
-    if (results.documents) {
-      return results.documents.map(doc => doc ? JSON.parse(doc) : null);
+    if (results.metadatas) {
+      return results.metadatas;
     } else {
       throw new Error('No dreams found');
     }
