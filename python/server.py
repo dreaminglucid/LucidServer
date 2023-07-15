@@ -1,32 +1,69 @@
 from flask import Flask, request, jsonify
-from database import create_dream, get_dreams, get_dream, update_dream_analysis_and_image, get_dream_analysis
+from database import create_dream, get_dreams, get_dream, update_dream_analysis_and_image, get_dream_analysis, get_dream_image
+from agentmemory import set_storage_path
+import logging
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+set_storage_path('./memory')
 
 app = Flask(__name__)
 
 @app.route('/api/dreams', methods=['POST'])
 def create_dream_endpoint():
+    logger.info("Received request at /api/dreams POST endpoint.")
     data = request.json
     dream = create_dream(data['title'], data['date'], data['entry'])
-    return jsonify(dream)
+    logger.info(f"Response: {dream}")
+    return jsonify(dream), 200 if dream is not None else 500
+
+@app.route('/api/dreams/<int:dream_id>', methods=['PUT'])
+def update_dream_endpoint(dream_id):
+    logger.info(f"Received request at /api/dreams/{dream_id} PUT endpoint.")
+    data = request.json
+    dream = update_dream_analysis_and_image(dream_id, data['analysis'], data['image'])
+    logger.info(f"Response: {dream}")
+    return jsonify(dream), 200 if dream is not None else 500
 
 @app.route('/api/dreams', methods=['GET'])
 def get_dreams_endpoint():
+    logger.info("Received request at /api/dreams GET endpoint.")
     dreams = get_dreams()
+    logger.info(f"Response: {dreams}")
     return jsonify(dreams)
 
-@app.route('/api/dreams/<int:dream_id>', methods=['GET'])
+@app.route('/api/dreams/<string:dream_id>', methods=['GET'])
 def get_dream_endpoint(dream_id):
+    logger.info(f"Received request at /api/dreams/{dream_id} GET endpoint.")
     dream = get_dream(dream_id)
+    logger.info(f"Response: {dream}")
     if dream is None:
         return jsonify({'error': 'Dream not found'}), 404
     return jsonify(dream)
 
-@app.route('/api/dreams/<int:dream_id>/analysis', methods=['GET'])
+@app.route('/api/dreams/<string:dream_id>/analysis', methods=['GET'])
 def get_dream_analysis_endpoint(dream_id):
-    analysis = get_dream_analysis(dream_id)
-    if analysis is None:
-        return jsonify({'error': 'Dream not found'}), 404
-    return jsonify(analysis)
+    logger.info(f"Received request at /api/dreams/{dream_id}/analysis GET endpoint.")
+    try:
+        analysis = get_dream_analysis(dream_id)
+        logger.info(f"Response: {analysis}")
+        return jsonify(analysis)
+    except ValueError as e:
+        logger.error(f"Error occurred: {str(e)}")
+        return jsonify({'error': str(e)}), 404
+
+@app.route('/api/dreams/<string:dream_id>/image', methods=['GET'])
+def get_dream_image_endpoint(dream_id):
+    logger.info(f"Received request at /api/dreams/{dream_id}/image GET endpoint.")
+    try:
+        image = get_dream_image(dream_id)
+        logger.info(f"Response: {image}")
+        return jsonify({'image': image})
+    except ValueError as e:
+        logger.error(f"Error occurred: {str(e)}")
+        return jsonify({'error': str(e)}), 404
 
 if __name__ == '__main__':
     app.run(debug=True)
