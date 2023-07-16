@@ -11,6 +11,7 @@ set_storage_path('./memory')
 
 app = Flask(__name__)
 
+
 @app.route('/api/dreams', methods=['POST'])
 def create_dream_endpoint():
     logger.info("Received request at /api/dreams POST endpoint.")
@@ -23,13 +24,17 @@ def create_dream_endpoint():
     logger.info(f"Response: {dream}")
     return jsonify(dream), 200
 
+
 @app.route('/api/dreams/<string:dream_id>', methods=['PUT'])
 def update_dream_endpoint(dream_id):
     logger.info(f"Received request at /api/dreams/{dream_id} PUT endpoint.")
     data = request.json
-    dream = update_dream_analysis_and_image(dream_id, data['analysis'], data['image'])
+    analysis = get_dream_analysis(dream_id)
+    image = get_dream_image(dream_id)
+    dream = update_dream_analysis_and_image(dream_id, analysis, image)
     logger.info(f"Response: {dream}")
     return jsonify(dream), 200 if dream is not None else 500
+
 
 @app.route('/api/dreams', methods=['GET'])
 def get_dreams_endpoint():
@@ -37,6 +42,7 @@ def get_dreams_endpoint():
     dreams = get_dreams()
     logger.info(f"Response: {dreams}")
     return jsonify(dreams)
+
 
 @app.route('/api/dreams/<string:dream_id>', methods=['GET'])
 def get_dream_endpoint(dream_id):
@@ -46,9 +52,11 @@ def get_dream_endpoint(dream_id):
         return jsonify({'error': 'Dream not found'}), 404
     return jsonify(dream)
 
+
 @app.route('/api/dreams/<string:dream_id>/analysis', methods=['GET'])
 def get_dream_analysis_endpoint(dream_id):
-    logger.info(f"Received request at /api/dreams/{dream_id}/analysis GET endpoint.")
+    logger.info(
+        f"Received request at /api/dreams/{dream_id}/analysis GET endpoint.")
     try:
         analysis = get_dream_analysis(dream_id)
         logger.info(f"Response: {analysis}")
@@ -57,9 +65,11 @@ def get_dream_analysis_endpoint(dream_id):
         logger.error(f"Error occurred: {str(e)}")
         return jsonify({'error': str(e)}), 404
 
+
 @app.route('/api/dreams/<string:dream_id>/image', methods=['GET'])
 def get_dream_image_endpoint(dream_id):
-    logger.info(f"Received request at /api/dreams/{dream_id}/image GET endpoint.")
+    logger.info(
+        f"Received request at /api/dreams/{dream_id}/image GET endpoint.")
     try:
         image = get_dream_image(dream_id)
         logger.info(f"Response: {image}")
@@ -67,6 +77,7 @@ def get_dream_image_endpoint(dream_id):
     except ValueError as e:
         logger.error(f"Error occurred: {str(e)}")
         return jsonify({'error': str(e)}), 404
+
 
 if __name__ == '__main__':
     app.run(debug=True)

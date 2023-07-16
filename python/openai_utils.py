@@ -45,6 +45,7 @@ gpt_response_function = compose_function(
     required_properties=["prompt", "system_content"],
 )
 
+
 def get_dream_summary(dream_entry):
     try:
         logger.info(f"Generating summary for dream entry: {dream_entry}")
@@ -105,7 +106,7 @@ def generate_dream_image(dreams, dream_id):
         summary = get_dream_summary(dream['entry'])
 
         data = {
-            'prompt': f"Based on the summary of your dream about {summary}, generate a high-quality, detailed, digital art image in a photorealistic style that encapsulates the theme and mood of the dream.",
+            'prompt': f"{summary}, high quality, digital art, photorealistic style, very detailed, lucid dream themed",
             'n': 1,
             'size': '512x512',
         }
