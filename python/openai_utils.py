@@ -19,7 +19,7 @@ openai_api_key = config.get('openai', 'api_key')
 
 dream_summary_function = compose_function(
     name="get_dream_summary",
-    description="Summarize the dream entry",
+    description="This function is used to condense the dream entry into a short summary. The goal of this function is to capture the main events, characters, and emotions from the dream in a clear and concise manner. This allows the user to quickly review their dream without having to read through the full entry.",
     properties={
         "dream_entry": {
             "type": "string",
@@ -31,7 +31,7 @@ dream_summary_function = compose_function(
 
 gpt_response_function = compose_function(
     name="get_gpt_response",
-    description="Generate a GPT response based on the prompt and system content.",
+    description="This function is used to generate an analysis of the dream based on the prompt and system content. The analysis should provide insights into potential meanings or interpretations of the dream. It should consider the symbolism of the dream's elements, the emotions experienced by the dreamer, and any recurring patterns or themes.",
     properties={
         "prompt": {
             "type": "string",
@@ -45,12 +45,11 @@ gpt_response_function = compose_function(
     required_properties=["prompt", "system_content"],
 )
 
-
 def get_dream_summary(dream_entry):
     try:
         logger.info(f"Generating summary for dream entry: {dream_entry}")
         response = openai_function_call(
-            text=dream_entry,
+            text=f"You've just woken up from a dream about {dream_entry}. In a few sentences, summarize the main events and themes of this dream.",
             functions=dream_summary_function,
             function_call="get_dream_summary",
             api_key=openai_api_key
@@ -75,7 +74,7 @@ def get_gpt_response(prompt, system_content):
     try:
         logger.info(f"Generating GPT response for prompt: {prompt}")
         response = openai_function_call(
-            text=prompt,
+            text=f"You've just shared a dream about {prompt}. Let's delve deeper into this dream and explore its potential meanings. Consider the symbolism of the elements in the dream, the emotions you felt, and any recurring themes or patterns. What might this dream be trying to tell you?",
             functions=gpt_response_function,
             function_call="get_gpt_response",
             api_key=openai_api_key
@@ -106,7 +105,7 @@ def generate_dream_image(dreams, dream_id):
         summary = get_dream_summary(dream['entry'])
 
         data = {
-            'prompt': f"{summary}, high quality, digital art, photorealistic style, very detailed, lucid dream themed",
+            'prompt': f"Based on the summary of your dream about {summary}, generate a high-quality, detailed, digital art image in a photorealistic style that encapsulates the theme and mood of the dream.",
             'n': 1,
             'size': '512x512',
         }
