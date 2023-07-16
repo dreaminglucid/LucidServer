@@ -16,10 +16,14 @@ def create_dream_endpoint():
     logger.info("Received request at /api/dreams POST endpoint.")
     data = request.json
     dream = create_dream(data['title'], data['date'], data['entry'])
+    if dream is None:
+        return jsonify({'error': 'Dream creation failed'}), 500
+    if 'id' not in dream:
+        return jsonify({'error': 'Dream ID not generated'}), 500
     logger.info(f"Response: {dream}")
-    return jsonify(dream), 200 if dream is not None else 500
+    return jsonify(dream), 200
 
-@app.route('/api/dreams/<int:dream_id>', methods=['PUT'])
+@app.route('/api/dreams/<string:dream_id>', methods=['PUT'])
 def update_dream_endpoint(dream_id):
     logger.info(f"Received request at /api/dreams/{dream_id} PUT endpoint.")
     data = request.json
@@ -38,7 +42,6 @@ def get_dreams_endpoint():
 def get_dream_endpoint(dream_id):
     logger.info(f"Received request at /api/dreams/{dream_id} GET endpoint.")
     dream = get_dream(dream_id)
-    logger.info(f"Response: {dream}")
     if dream is None:
         return jsonify({'error': 'Dream not found'}), 404
     return jsonify(dream)
