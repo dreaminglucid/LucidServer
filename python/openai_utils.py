@@ -3,13 +3,19 @@ import os
 from easycompletion import compose_function, openai_function_call
 import requests
 import json
+import configparser
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Set OpenAI API Key
-openai_api_key = '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'
+# Read config.ini file
+config = configparser.ConfigParser()
+config.read('config.ini')
+
+# Get the API key from the config file
+openai_api_key = config.get('openai', 'api_key')
+
 
 dream_summary_function = compose_function(
     name="get_dream_summary",

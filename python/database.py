@@ -41,7 +41,7 @@ def get_dream_analysis(dream_id):
             return dream['analysis']
         else:
             analysis = get_gpt_response(dream['entry'], "You are dreaming about")
-            update_memory(dream_id, metadata={'analysis': analysis})
+            update_memory("dreams", dream_id, metadata={'analysis': analysis})
             return analysis
     except Exception as e:
         logger.error(f"Error in get_dream_analysis: {e}")
@@ -57,7 +57,7 @@ def get_dream_image(dream_id):
             dreams = get_dreams()
             summary = get_dream_summary(dream['entry'])
             image = generate_dream_image(dreams, dream_id)
-            update_memory(dream_id, metadata={'image': image})
+            update_memory("dreams", dream_id, metadata={'image': image})
             return image
     except Exception as e:
         logger.error(f"Error in get_dream_image: {e}")
