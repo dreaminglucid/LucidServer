@@ -29,8 +29,8 @@ def create_dream_endpoint():
 def update_dream_endpoint(dream_id):
     logger.info(f"Received request at /api/dreams/{dream_id} PUT endpoint.")
     data = request.json
-    analysis = get_dream_analysis(dream_id)
-    image = get_dream_image(dream_id)
+    analysis = data.get('analysis', None)
+    image = data.get('image', None)
     dream = update_dream_analysis_and_image(dream_id, analysis, image)
     logger.info(f"Response: {dream}")
     return jsonify(dream), 200 if dream is not None else 500
@@ -64,7 +64,7 @@ def get_dream_analysis_endpoint(dream_id):
     except ValueError as e:
         logger.error(f"Error occurred: {str(e)}")
         return jsonify({'error': str(e)}), 404
-
+    
 
 @app.route('/api/dreams/<string:dream_id>/image', methods=['GET'])
 def get_dream_image_endpoint(dream_id):
@@ -77,6 +77,7 @@ def get_dream_image_endpoint(dream_id):
     except ValueError as e:
         logger.error(f"Error occurred: {str(e)}")
         return jsonify({'error': str(e)}), 404
+
 
 
 if __name__ == '__main__':
