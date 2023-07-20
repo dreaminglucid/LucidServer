@@ -1,10 +1,12 @@
 import logging
+import time
 from agentmemory import (
     create_memory,
     get_memories,
     update_memory,
     get_memory,
-    save_memory
+    save_memory,
+    search_memory
 )
 from openai_utils import get_gpt_response, generate_dream_image, get_dream_summary
 
@@ -48,26 +50,35 @@ def get_dreams():
     return dreams
 
 
-def get_dream_analysis(dream_id):
+def get_dream_analysis(dream_id, max_retries=5):
     try:
         logger.info(f'Fetching dream analysis for dream id {dream_id}.')
         dream = get_dream(dream_id)
-        analysis = get_gpt_response(
-            dream['metadata']['entry'], "You are dreaming about")
-        return analysis
+        for _ in range(max_retries):
+            analysis = get_gpt_response(dream['metadata']['entry'], "You are dreaming about")
+            if analysis:
+                return analysis
+            time.sleep(5)
+        logger.error(f"Failed to get dream analysis after {max_retries} attempts.")
+        return None
     except Exception as e:
         logger.error(f"Error in get_dream_analysis: {e}")
         return None
     
 
-def get_dream_image(dream_id):
+def get_dream_image(dream_id, max_retries=5):
     try:
         logger.info(f'Fetching dream image for dream id {dream_id}.')
         dream = get_dream(dream_id)
         dreams = get_dreams()
         summary = get_dream_summary(dream['metadata']['entry'])
-        image = generate_dream_image(dreams, dream_id)
-        return image
+        for _ in range(max_retries):
+            image = generate_dream_image(dreams, dream_id)
+            if image:
+                return image
+            time.sleep(5)
+        logger.error(f"Failed to get dream image after {max_retries} attempts.")
+        return None
     except Exception as e:
         logger.error(f"Error in get_dream_image: {e}")
         return None
