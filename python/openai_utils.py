@@ -103,7 +103,7 @@ def generate_dream_image(dreams, dream_id):
         if not dream:
             return None
 
-        summary = get_dream_summary(dream['metadata']['entry']) 
+        summary = get_dream_summary(dream['metadata']['entry'])
 
         data = {
             'prompt': f"{summary}, high quality, digital art, photorealistic style, very detailed, lucid dream themed",
