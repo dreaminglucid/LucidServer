@@ -65,7 +65,7 @@ def get_dream_image(dream_id):
         logger.info(f'Fetching dream image for dream id {dream_id}.')
         dream = get_dream(dream_id)
         dreams = get_dreams()
-        summary = get_dream_summary(dream['metadata']['entry'])  # Corrected line
+        summary = get_dream_summary(dream['metadata']['entry'])
         image = generate_dream_image(dreams, dream_id)
         return image
     except Exception as e:
