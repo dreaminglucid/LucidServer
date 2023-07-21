@@ -94,8 +94,7 @@ def search_dreams_endpoint():
 def search_chat_with_dreams_endpoint():
     logger.info("Received request at /api/dreams/search-chat POST endpoint.")
     data = request.json
-    search_results = search_dreams(data['prompt'])
-    response = search_chat_with_dreams(data['prompt'], search_results)
+    response = search_chat_with_dreams(data['prompt'])
     logger.info(f"Response: {response}")
     return jsonify(response)
 

@@ -1,10 +1,14 @@
 import logging
-import os
-from easycompletion import compose_function, openai_function_call
 import requests
 import json
 import configparser
+
+from easycompletion import compose_function, openai_function_call
 from agentmemory import search_memory
+
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+from nltk.tag import pos_tag
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -133,6 +137,20 @@ def generate_dream_image(dreams, dream_id):
         return None
 
 
+def generate_keywords(prompt):
+    # Tokenize the prompt
+    tokens = word_tokenize(prompt)
+    
+    # Part-of-speech tagging
+    tagged = pos_tag(tokens)
+    
+    # Filter out stopwords and select only nouns, verbs, and adjectives
+    stopwords_list = stopwords.words('english')
+    keywords = [word for word, pos in tagged if word not in stopwords_list and pos in ('NN', 'VB', 'JJ')]
+    
+    # Return the first keyword if there is at least one, otherwise return an empty string
+    return keywords[0] if keywords else ""
+
 def search_dreams(keyword):
     logger.info(f'Searching dreams for keyword: {keyword}.')
     search_results = search_memory("dreams", keyword)
@@ -141,17 +159,30 @@ def search_dreams(keyword):
     return dreams
 
 
-def search_chat_with_dreams(prompt, dreams):
+def search_chat_with_dreams(prompt):
     try:
-        logger.info(f"Initiating chat with search for prompt: {prompt}")
+        logger.info(f"Received prompt: {prompt}")  # Log the received prompt
+
+        # Generate keywords using NLTK
+        keywords = generate_keywords(prompt)
+
+        # Now we search the dreams based on the keywords
+        search_results = search_dreams(keywords)
 
         # If we have search results, format them into a string that can be used in the GPT-4 prompt.
-        if dreams:
+        if search_results:
             search_results_str = "Here are some similar dreams from the database: \n" + '\n'.join(
-                [f"- Title: {dream['metadata']['title']}, Date: {dream['metadata']['date']}, Analysis: {dream['metadata'].get('analysis', 'Analysis not available')}\nDream Entry: {dream['metadata']['entry']}" for dream in dreams])
+                [f"- Title: {dream['metadata']['title']}, Date: {dream['metadata']['date']}, Analysis: {dream['metadata'].get('analysis', 'Analysis not available')}\nDream Entry: {dream['metadata']['entry']}" for dream in search_results])
+
             prompt = f"{prompt}\n\n{search_results_str}"
 
-        # Define the function to be used with EasyCompletion
+        else:
+            logger.info("No similar dreams found in the database.")
+            prompt = f"{prompt}\n\nNo similar dreams were found in the database. Let's explore possible meanings of your dream."
+
+        logger.info(f"Final prompt: {prompt}")  # Log the final prompt
+
+        # Define the function to discuss the search results or the original dream if no similar dreams were found
         discuss_results_function = compose_function(
             name="discuss_search_results",
             description="Discuss the search results and point out common themes or patterns",
@@ -166,7 +197,7 @@ def search_chat_with_dreams(prompt, dreams):
 
         # Generate response using EasyCompletion
         response = openai_function_call(
-            text=f"You've just shared a dream about {prompt}. Let's discuss the similarities and patterns found in the search results.",
+            text=prompt,
             functions=[discuss_results_function],
             function_call="discuss_search_results",
             api_key=openai_api_key
@@ -180,7 +211,7 @@ def search_chat_with_dreams(prompt, dreams):
 
         # If there's a response from GPT-4, return the response along with the search results.
         if 'arguments' in response and 'discussion' in response['arguments']:
-            response['search_results'] = dreams
+            response['search_results'] = search_results
             return response
         else:
             logger.error("Error: Unable to generate a response.")
