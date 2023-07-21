@@ -4,6 +4,7 @@ from easycompletion import compose_function, openai_function_call
 import requests
 import json
 import configparser
+from agentmemory import search_memory
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -130,3 +131,37 @@ def generate_dream_image(dreams, dream_id):
         logger.error(
             f"Error generating dream-inspired image: {e}", exc_info=True)
         return None
+
+
+def search_dreams(keyword):
+    logger.info(f'Searching dreams for keyword: {keyword}.')
+    search_results = search_memory("dreams", keyword)
+    dreams = [{"id": memory["id"], "document": memory["document"], "metadata": memory["metadata"]}
+              for memory in search_results]
+    return dreams
+
+
+def chat_with_search(prompt, system_content):
+    try:
+        logger.info(f"Initiating chat with search for prompt: {prompt}")
+        response = openai_function_call(
+            text=f"You've just shared a dream about {prompt}. Let's delve deeper into this dream and explore its potential meanings. Consider the symbolism of the elements in the dream, the emotions you felt, and any recurring themes or patterns. What might this dream be trying to tell you?",
+            functions=gpt_response_function,
+            function_call="get_gpt_response",
+            api_key=openai_api_key
+        )
+        logger.info(f"GPT-3 response: {response}")
+        if 'error' in response and response['error'] is not None:
+            logger.error(f"Error from GPT-3: {response['error']}")
+            return 'Error: Unable to generate a response.'
+        if 'arguments' in response and 'prompt' in response['arguments']:
+            search_results = search_dreams(response['arguments']['prompt'])
+            response['search_results'] = search_results
+            return response
+        else:
+            logger.error("Error: Unable to generate a response.")
+            return 'Error: Unable to generate a response.'
+    except Exception as e:
+        logger.error(
+            f"Error generating GPT response with search: {e}", exc_info=True)
+        return 'Error: Unable to generate a response.'

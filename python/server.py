@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from database import create_dream, get_dreams, get_dream, update_dream_analysis_and_image, get_dream_analysis, get_dream_image
 from agentmemory import set_storage_path
+from openai_utils import chat_with_search, search_dreams
 import logging
 
 # Setup logging
@@ -77,6 +78,25 @@ def get_dream_image_endpoint(dream_id):
     except ValueError as e:
         logger.error(f"Error occurred: {str(e)}")
         return jsonify({'error': str(e)}), 404
+
+
+@app.route('/api/dreams/search', methods=['POST'])
+def search_dreams_endpoint():
+    logger.info("Received request at /api/dreams/search POST endpoint.")
+    data = request.json
+    keyword = data.get('query', '')
+    dreams = search_dreams(keyword)
+    logger.info(f"Response: {dreams}")
+    return jsonify(dreams)
+
+
+@app.route('/api/dreams/chat', methods=['POST'])
+def chat_with_search_endpoint():
+    logger.info("Received request at /api/dreams/chat POST endpoint.")
+    data = request.json
+    response = chat_with_search(data['prompt'], data['system_content'])
+    logger.info(f"Response: {response}")
+    return jsonify(response)
 
 
 if __name__ == '__main__':

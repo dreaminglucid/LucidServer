@@ -5,8 +5,7 @@ from agentmemory import (
     get_memories,
     update_memory,
     get_memory,
-    save_memory,
-    search_memory
+    save_memory
 )
 from openai_utils import get_gpt_response, generate_dream_image, get_dream_summary
 
