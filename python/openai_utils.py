@@ -144,27 +144,42 @@ def search_dreams(keyword):
 def search_chat_with_dreams(prompt, dreams):
     try:
         logger.info(f"Initiating chat with search for prompt: {prompt}")
-        # If we have search results, format them into a string that can be used in the GPT-3 prompt.
+
+        # If we have search results, format them into a string that can be used in the GPT-4 prompt.
         if dreams:
             search_results_str = "Here are some similar dreams from the database: \n" + '\n'.join(
                 [f"- Title: {dream['metadata']['title']}, Date: {dream['metadata']['date']}, Analysis: {dream['metadata'].get('analysis', 'Analysis not available')}\nDream Entry: {dream['metadata']['entry']}" for dream in dreams])
             prompt = f"{prompt}\n\n{search_results_str}"
 
+        # Define the function to be used with EasyCompletion
+        discuss_results_function = compose_function(
+            name="discuss_search_results",
+            description="Discuss the search results and point out common themes or patterns",
+            properties={
+                "discussion": {
+                    "type": "string",
+                    "description": "The discussion text generated from the search results",
+                }
+            },
+            required_properties=["discussion"],
+        )
+
+        # Generate response using EasyCompletion
         response = openai_function_call(
-            text=f"You've just shared a dream about {prompt}. Let's delve deeper into this dream and explore its potential meanings. Consider the symbolism of the elements in the dream, the emotions you felt, and any recurring themes or patterns. What might this dream be trying to tell you?",
-            functions=gpt_response_function,
-            function_call="get_gpt_response",
+            text=f"You've just shared a dream about {prompt}. Let's discuss the similarities and patterns found in the search results.",
+            functions=[discuss_results_function],
+            function_call="discuss_search_results",
             api_key=openai_api_key
         )
-        logger.info(f"GPT-3 response: {response}")
+        logger.info(f"GPT-4 response: {response}")
 
-        # If there's an error from GPT-3, return an error message.
+        # If there's an error from GPT-4, return an error message.
         if 'error' in response and response['error'] is not None:
-            logger.error(f"Error from GPT-3: {response['error']}")
+            logger.error(f"Error from GPT-4: {response['error']}")
             return 'Error: Unable to generate a response.'
 
-        # If there's a response from GPT-3, return the response along with the search results.
-        if 'arguments' in response and 'prompt' in response['arguments']:
+        # If there's a response from GPT-4, return the response along with the search results.
+        if 'arguments' in response and 'discussion' in response['arguments']:
             response['search_results'] = dreams
             return response
         else:
