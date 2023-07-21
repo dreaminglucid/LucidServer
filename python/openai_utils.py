@@ -147,7 +147,7 @@ def search_chat_with_dreams(prompt, dreams):
         # If we have search results, format them into a string that can be used in the GPT-3 prompt.
         if dreams:
             search_results_str = "Here are some similar dreams from the database: \n" + '\n'.join(
-                [f"- {dream['metadata']['title']}: {dream['metadata']['entry']}" for dream in dreams])
+                [f"- Title: {dream['metadata']['title']}, Date: {dream['metadata']['date']}, Analysis: {dream['metadata'].get('analysis', 'Analysis not available')}\nDream Entry: {dream['metadata']['entry']}" for dream in dreams])
             prompt = f"{prompt}\n\n{search_results_str}"
 
         response = openai_function_call(
