@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from database import create_dream, get_dreams, get_dream, update_dream_analysis_and_image, get_dream_analysis, get_dream_image
 from agentmemory import set_storage_path
-from openai_utils import chat_with_search, search_dreams
+from openai_utils import search_dreams, search_chat_with_dreams
 import logging
 
 # Setup logging
@@ -90,11 +90,12 @@ def search_dreams_endpoint():
     return jsonify(dreams)
 
 
-@app.route('/api/dreams/chat', methods=['POST'])
-def chat_with_search_endpoint():
-    logger.info("Received request at /api/dreams/chat POST endpoint.")
+@app.route('/api/dreams/search-chat', methods=['POST'])
+def search_chat_with_dreams_endpoint():
+    logger.info("Received request at /api/dreams/search-chat POST endpoint.")
     data = request.json
-    response = chat_with_search(data['prompt'], data['system_content'])
+    search_results = search_dreams(data['prompt'])
+    response = search_chat_with_dreams(data['prompt'], search_results)
     logger.info(f"Response: {response}")
     return jsonify(response)
 

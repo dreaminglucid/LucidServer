@@ -141,9 +141,15 @@ def search_dreams(keyword):
     return dreams
 
 
-def chat_with_search(prompt, system_content):
+def search_chat_with_dreams(prompt, dreams):
     try:
         logger.info(f"Initiating chat with search for prompt: {prompt}")
+        # If we have search results, format them into a string that can be used in the GPT-3 prompt.
+        if dreams:
+            search_results_str = "Here are some similar dreams from the database: \n" + '\n'.join(
+                [f"- {dream['metadata']['title']}: {dream['metadata']['entry']}" for dream in dreams])
+            prompt = f"{prompt}\n\n{search_results_str}"
+
         response = openai_function_call(
             text=f"You've just shared a dream about {prompt}. Let's delve deeper into this dream and explore its potential meanings. Consider the symbolism of the elements in the dream, the emotions you felt, and any recurring themes or patterns. What might this dream be trying to tell you?",
             functions=gpt_response_function,
@@ -151,12 +157,15 @@ def chat_with_search(prompt, system_content):
             api_key=openai_api_key
         )
         logger.info(f"GPT-3 response: {response}")
+
+        # If there's an error from GPT-3, return an error message.
         if 'error' in response and response['error'] is not None:
             logger.error(f"Error from GPT-3: {response['error']}")
             return 'Error: Unable to generate a response.'
+
+        # If there's a response from GPT-3, return the response along with the search results.
         if 'arguments' in response and 'prompt' in response['arguments']:
-            search_results = search_dreams(response['arguments']['prompt'])
-            response['search_results'] = search_results
+            response['search_results'] = dreams
             return response
         else:
             logger.error("Error: Unable to generate a response.")
