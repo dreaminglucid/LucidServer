@@ -6,10 +6,6 @@ import configparser
 from easycompletion import compose_function, openai_function_call
 from agentmemory import search_memory
 
-from nltk.tokenize import word_tokenize
-from nltk.corpus import stopwords
-from nltk.tag import pos_tag
-
 # Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -137,23 +133,9 @@ def generate_dream_image(dreams, dream_id):
         return None
 
 
-def generate_keywords(prompt):
-    # Tokenize the prompt
-    tokens = word_tokenize(prompt)
-    
-    # Part-of-speech tagging
-    tagged = pos_tag(tokens)
-    
-    # Filter out stopwords and select only nouns, verbs, and adjectives
-    stopwords_list = stopwords.words('english')
-    keywords = [word for word, pos in tagged if word not in stopwords_list and pos in ('NN', 'VB', 'JJ')]
-    
-    # Return the first keyword if there is at least one, otherwise return an empty string
-    return keywords[0] if keywords else ""
-
 def search_dreams(keyword):
     logger.info(f'Searching dreams for keyword: {keyword}.')
-    search_results = search_memory("dreams", keyword)
+    search_results = search_memory("dreams", keyword, n_results=3)  # returns top 20 results
     dreams = [{"id": memory["id"], "document": memory["document"], "metadata": memory["metadata"]}
               for memory in search_results]
     return dreams
@@ -163,11 +145,8 @@ def search_chat_with_dreams(prompt):
     try:
         logger.info(f"Received prompt: {prompt}")  # Log the received prompt
 
-        # Generate keywords using NLTK
-        keywords = generate_keywords(prompt)
-
-        # Now we search the dreams based on the keywords
-        search_results = search_dreams(keywords)
+        # Now we search the dreams based on the entire prompt
+        search_results = search_dreams(prompt)
 
         # If we have search results, format them into a string that can be used in the GPT-4 prompt.
         if search_results:

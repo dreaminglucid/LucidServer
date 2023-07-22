@@ -1,14 +1,11 @@
 from flask import Flask, request, jsonify
 from database import create_dream, get_dreams, get_dream, update_dream_analysis_and_image, get_dream_analysis, get_dream_image
-from agentmemory import set_storage_path
 from openai_utils import search_dreams, search_chat_with_dreams
 import logging
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-set_storage_path('./memory')
 
 app = Flask(__name__)
 

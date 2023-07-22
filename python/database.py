@@ -4,8 +4,7 @@ from agentmemory import (
     create_memory,
     get_memories,
     update_memory,
-    get_memory,
-    save_memory
+    get_memory
 )
 from openai_utils import get_gpt_response, generate_dream_image, get_dream_summary
 
@@ -16,7 +15,6 @@ logger = logging.getLogger(__name__)
 def create_dream(title, date, entry):
     dream = {'title': title, 'date': date, 'entry': entry}
     memory_id = create_memory("dreams", f"{title}\n{entry}", metadata=dream)
-    save_memory()
     logger.info('Dream created successfully.')
     dream['id'] = memory_id
     return dream
@@ -94,6 +92,5 @@ def update_dream_analysis_and_image(dream_id, analysis=None, image=None):
     if image:
         dream['metadata']['image'] = image  # Update 'image' inside 'metadata'
     update_memory("dreams", dream_id, metadata=dream['metadata'])  # Update only 'metadata'
-    save_memory()
     logger.info('Dream analysis and image updated successfully.')
     return dream
