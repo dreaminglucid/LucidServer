@@ -52,16 +52,18 @@ def get_dream_analysis(dream_id, max_retries=5):
         logger.info(f'Fetching dream analysis for dream id {dream_id}.')
         dream = get_dream(dream_id)
         for _ in range(max_retries):
-            analysis = get_gpt_response(dream['metadata']['entry'], "You are dreaming about")
+            analysis = get_gpt_response(
+                dream['metadata']['entry'], "You are dreaming about")
             if analysis:
                 return analysis
             time.sleep(5)
-        logger.error(f"Failed to get dream analysis after {max_retries} attempts.")
+        logger.error(
+            f"Failed to get dream analysis after {max_retries} attempts.")
         return None
     except Exception as e:
         logger.error(f"Error in get_dream_analysis: {e}")
         return None
-    
+
 
 def get_dream_image(dream_id, max_retries=5):
     try:
@@ -74,7 +76,8 @@ def get_dream_image(dream_id, max_retries=5):
             if image:
                 return image
             time.sleep(5)
-        logger.error(f"Failed to get dream image after {max_retries} attempts.")
+        logger.error(
+            f"Failed to get dream image after {max_retries} attempts.")
         return None
     except Exception as e:
         logger.error(f"Error in get_dream_image: {e}")
@@ -88,9 +91,9 @@ def update_dream_analysis_and_image(dream_id, analysis=None, image=None):
         logger.error(f"Dream with id {dream_id} not found.")
         return None
     if analysis:
-        dream['metadata']['analysis'] = analysis  # Update 'analysis' inside 'metadata'
+        dream['metadata']['analysis'] = analysis
     if image:
-        dream['metadata']['image'] = image  # Update 'image' inside 'metadata'
-    update_memory("dreams", dream_id, metadata=dream['metadata'])  # Update only 'metadata'
+        dream['metadata']['image'] = image
+    update_memory("dreams", dream_id, metadata=dream['metadata'])
     logger.info('Dream analysis and image updated successfully.')
     return dream

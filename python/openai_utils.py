@@ -135,7 +135,7 @@ def generate_dream_image(dreams, dream_id):
 
 def search_dreams(keyword):
     logger.info(f'Searching dreams for keyword: {keyword}.')
-    search_results = search_memory("dreams", keyword, n_results=3)  # returns top 20 results
+    search_results = search_memory("dreams", keyword, n_results=5)
     dreams = [{"id": memory["id"], "document": memory["document"], "metadata": memory["metadata"]}
               for memory in search_results]
     return dreams
