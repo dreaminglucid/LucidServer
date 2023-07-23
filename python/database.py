@@ -38,7 +38,7 @@ def get_dream(dream_id):
 
 def get_dreams():
     log('Fetching all dreams.', type='info')
-    memories = get_memories("dreams")
+    memories = get_memories("dreams", n_results=2222)
     dreams = [{"id": memory["id"], "document": memory["document"], "metadata": memory["metadata"]}
               for memory in memories]
     return dreams
