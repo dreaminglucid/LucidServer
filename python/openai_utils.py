@@ -3,7 +3,7 @@ import requests
 import json
 import configparser
 
-from easycompletion import compose_function, openai_function_call
+from easycompletion import compose_function, openai_function_call, openai_text_call
 from agentmemory import search_memory
 
 # Read config.ini file
@@ -15,7 +15,7 @@ openai_api_key = config.get('openai', 'api_key')
 
 dream_summary_function = compose_function(
     name="get_dream_summary",
-    description="This function is used to condense the dream entry into a short summary. The goal of this function is to capture the main events, characters, and emotions from the dream in a clear and concise manner. This allows the user to quickly review their dream without having to read through the full entry.",
+    description="This function is used to condense the dream entry into a short summary. The goal of this function is to capture the main events, characters, and emotions from the dream in a clear and concise manner. This will be used to generate the perfect dream image using DALLE AI generation from OpenAI.",
     properties={
         "dream_entry": {
             "type": "string",
@@ -27,7 +27,7 @@ dream_summary_function = compose_function(
 
 gpt_response_function = compose_function(
     name="get_gpt_response",
-    description="This function is used to generate an analysis of the dream based on the prompt and system content. The analysis should provide insights into potential meanings or interpretations of the dream. It should consider the symbolism of the dream's elements, the emotions experienced by the dreamer, and any recurring patterns or themes.",
+    description="This function is used to generate an analysis of the dream based on the prompt and system content. The analysis should provide insights into potential meanings or interpretations of the dream. It should consider the symbolism of the dream's elements, the emotions experienced by the dreamer, and any recurring patterns or themes. Format the response in a way that will later be useful for semantic search.",
     properties={
         "prompt": {
             "type": "string",
@@ -46,7 +46,7 @@ def get_dream_summary(dream_entry):
     try:
         log(f"Generating summary for dream entry: {dream_entry}", type='info')
         response = openai_function_call(
-            text=f"You've just woken up from a dream about {dream_entry}. In a few sentences, summarize the main events and themes of this dream.",
+            text=f"You've just woken up from a dream about {dream_entry}. In a short sentence, summarize the main events and themes of this dream into the perfect prompt to be used with the DALLE AI image generation tool by OpenAI.",
             functions=dream_summary_function,
             function_call="get_dream_summary",
             api_key=openai_api_key
@@ -72,7 +72,7 @@ def get_gpt_response(prompt, system_content):
     try:
         log(f"Generating GPT response for prompt: {prompt}", type='info')
         response = openai_function_call(
-            text=f"You've just shared a dream about {prompt}. Let's delve deeper into this dream and explore its potential meanings. Consider the symbolism of the elements in the dream, the emotions you felt, and any recurring themes or patterns. What might this dream be trying to tell you?",
+            text=f"You've just shared a dream about {prompt}. Let's delve deeper into this dream and explore its potential meanings. Consider the symbolism of the elements in the dream, the emotions you felt, and any recurring themes or patterns. Format the response in a way that will later be useful for semantic search.",
             functions=gpt_response_function,
             function_call="get_gpt_response",
             api_key=openai_api_key
@@ -104,7 +104,7 @@ def generate_dream_image(dreams, dream_id):
         summary = get_dream_summary(dream['metadata']['entry'])
 
         data = {
-            'prompt': f"{summary}, high quality, digital art, photorealistic style, very detailed, lucid dream themed",
+            'prompt': f"{summary}, high quality, digital art, lucid dream themed",
             'n': 1,
             'size': '512x512',
         }
