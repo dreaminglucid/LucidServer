@@ -2,6 +2,7 @@ from agentlogger import log, print_header, write_to_file
 import requests
 import json
 import configparser
+import random
 
 from easycompletion import compose_function, openai_function_call, openai_text_call
 from agentmemory import search_memory
@@ -39,6 +40,114 @@ gpt_response_function = compose_function(
         },
     },
     required_properties=["prompt", "system_content"],
+)
+
+discuss_results_function = compose_function(
+    name="discuss_search_results",
+    description="I would like you to analyze and discuss the commonalities among the dream search results, pointing out recurring themes, symbols, or patterns. Consider the possible meanings and interpretations of these elements in the context of dream analysis theories.",
+    properties={
+        "discussion": {
+            "type": "string",
+            "description": "The discussion text generated from the search results",
+        }
+    },
+    required_properties=["discussion"],
+)
+
+discuss_themes_function = compose_function(
+    name="discuss_themes",
+    description="Please provide a deep analysis of the main themes appearing in the dream search results. Explore the potential symbolic meanings of these themes and how they might relate to the dreamer's personal experiences or subconscious thoughts.",
+    properties={
+        "themes": {
+            "type": "string",
+            "description": "The discussion text generated from the themes in the search results",
+        }
+    },
+    required_properties=["themes"],
+)
+
+discuss_emotions_function = compose_function(
+    name="discuss_emotions",
+    description="Analyze the emotional content of the dreams in the search results. Discuss what these emotions might suggest about the dreamer's subconscious feelings or concerns. Also, consider how these emotions interact with the other elements of the dreams.",
+    properties={
+        "emotions": {
+            "type": "string",
+            "description": "The discussion text generated from the emotions in the search results",
+        }
+    },
+    required_properties=["emotions"],
+)
+
+discuss_characters_function = compose_function(
+    name="discuss_characters",
+    description="Examine the characters that appear in the dream search results. Discuss their possible symbolic meanings and roles within the dream narratives. Consider how these characters might reflect aspects of the dreamer's own personality or relationships.",
+    properties={
+        "characters": {
+            "type": "string",
+            "description": "The discussion text generated from the characters in the search results",
+        }
+    },
+    required_properties=["characters"],
+)
+
+interpret_symbols_function = compose_function(
+    name="interpret_dream_symbols",
+    description="Interpret the key symbols or themes found in the dream. Discuss their potential meanings based on various dream interpretation theories. Consider both universal interpretations and meanings that might be specific to the dreamer's personal experiences or cultural background.",
+    properties={
+        "symbols": {
+            "type": "string",
+            "description": "The symbols or themes to be interpreted",
+        }
+    },
+    required_properties=["symbols"],
+)
+
+personal_associations_function = compose_function(
+    name="explore_personal_associations",
+    description="Explore the dreamer's personal associations or experiences that might be relevant to the dream. Discuss how these personal factors could influence the interpretation of the dream's symbols and themes. Consider both the dreamer's recent experiences and long-term memories or relationships.",
+    properties={
+        "personal_associations": {
+            "type": "string",
+            "description": "The personal associations or experiences to be explored",
+        }
+    },
+    required_properties=["personal_associations"],
+)
+
+recall_similar_function = compose_function(
+    name="recall_similar_dreams",
+    description="Retrieve similar dreams from the dream database. Discuss the similarities and differences between these dreams and the original dream, considering elements such as themes, symbols, emotions, and characters. Also, explore what these similarities might suggest about recurring patterns in the dreamer's dreams.",
+    properties={
+        "similar_dreams": {
+            "type": "string",
+            "description": "The similar dreams to be recalled",
+        }
+    },
+    required_properties=["similar_dreams"],
+)
+
+predict_future_function = compose_function(
+    name="predict_future_dreams",
+    description="Speculate about possible future dreams the dreamer might have, based on the patterns observed in their current dreams. Discuss what changes in their life or subconscious thoughts could lead to different types of dreams. Keep in mind that this is purely speculative and not a definite prediction.",
+    properties={
+        "future_dreams": {
+            "type": "string",
+            "description": "The possible future dreams to be predicted",
+        }
+    },
+    required_properties=["future_dreams"],
+)
+
+discuss_general_function = compose_function(
+    name="discuss_general_dream_concept",
+    description="Discuss the general concept of dreams and dream analysis. Provide an overview of common theories or perspectives on why we dream, what dreams might mean, and how dreams can be interpreted. Also, consider the limitations and challenges of dream analysis.",
+    properties={
+        "general_concept": {
+            "type": "string",
+            "description": "The general concept to be discussed",
+        }
+    },
+    required_properties=["general_concept"],
 )
 
 
@@ -132,53 +241,82 @@ def generate_dream_image(dreams, dream_id):
 
 def search_dreams(keyword):
     log(f'Searching dreams for keyword: {keyword}.', type='info')
-    search_results = search_memory("dreams", keyword, n_results=5)
+    search_results = search_memory("dreams", keyword, n_results=100)
     dreams = [{"id": memory["id"], "document": memory["document"], "metadata": memory["metadata"]}
               for memory in search_results]
     return dreams
 
 
-def search_chat_with_dreams(prompt):
+# Define available functions
+available_functions = [
+    discuss_results_function, 
+    discuss_themes_function, 
+    discuss_emotions_function, 
+    discuss_characters_function,
+    interpret_symbols_function, 
+    personal_associations_function, 
+    recall_similar_function,
+    predict_future_function, 
+    discuss_general_function
+]
+
+
+def call_function_by_name(function_name, prompt):
+    # Get the corresponding function from the available_functions dictionary
+    function_to_call = next(
+        (func for func in available_functions if func['name'] == function_name), None)
+
+    # If the function name is not recognized, select a random function
+    if function_to_call is None:
+        log(f"Unknown function name: {function_name}. Selecting a function randomly.", type='info', color='yellow')
+        function_to_call = random.choice(available_functions)
+
+    # Create a conversational context
+    context = f"""
+    User: {prompt}
+    System: I see. You're asking me to {function_to_call['description']}. Let's delve into this.
+    """
+
+    # Call the selected function
+    response = openai_function_call(
+        text=context,  # Use the context as the text for the function call
+        functions=[function_to_call],
+        function_call=function_to_call['name'],
+        api_key=openai_api_key,
+    )
+
+    return response
+
+
+def search_chat_with_dreams(function_name, prompt):
     try:
-        # Log the received prompt
+        # Observe: Log the received prompt
         log(f"Received prompt: {prompt}", type='info')
 
-        # Now we search the dreams based on the entire prompt
+        # Search the dreams based on the entire prompt
         search_results = search_dreams(prompt)
 
-        # If we have search results, format them into a string that can be used in the GPT-4 prompt.
+        # Create the conversational context
+        context = ""
+
+        # If we have search results, add them to the context.
         if search_results:
-            search_results_str = "Here are some similar dreams from the database: \n" + '\n'.join(
-                [f"- Title: {dream['metadata']['title']}, Date: {dream['metadata']['date']}, Analysis: {dream['metadata'].get('analysis', 'Analysis not available')}\nDream Entry: {dream['metadata']['entry']}" for dream in search_results])
-
-            prompt = f"{prompt}\n\n{search_results_str}"
-
+            for dream in search_results:
+                context += f"""
+                System: I found a similar dream in the database. The dream, titled "{dream['metadata']['title']}", was recorded on {dream['metadata']['date']}. Here's the dream entry: "{dream['metadata']['entry']}". The dream was analyzed as follows: "{dream['metadata'].get('analysis', 'Analysis not available')}".
+                """
         else:
             log("No similar dreams found in the database.", type='info')
-            prompt = f"{prompt}\n\nNo similar dreams were found in the database. Let's explore possible meanings of your dream."
+            context = "System: I'm sorry, but I couldn't find any similar dreams in the database. Let's explore possible meanings of your dream."
 
-        log(f"Final prompt: {prompt}", type='info')  # Log the final prompt
+        # Append the user's original prompt to the context.
+        context += f"User: {prompt}"
 
-        # Define the function to discuss the search results or the original dream if no similar dreams were found
-        discuss_results_function = compose_function(
-            name="discuss_search_results",
-            description="Discuss the search results and point out common themes or patterns",
-            properties={
-                "discussion": {
-                    "type": "string",
-                    "description": "The discussion text generated from the search results",
-                }
-            },
-            required_properties=["discussion"],
-        )
+        log(f"Final context: {context}", type='info')  # Log the final context
 
-        # Generate response using EasyCompletion
-        response = openai_function_call(
-            text=prompt,
-            functions=[discuss_results_function],
-            function_call="discuss_search_results",
-            api_key=openai_api_key
-        )
+        # Decide: Generate response using EasyCompletion, calling function based on user intent
+        response = call_function_by_name(function_name, context)  # Pass the context, not just the prompt
+
         log(f"GPT-4 response: {response}", type='info')
 
         # If there's an error from GPT-4, return an error message.
@@ -188,7 +326,7 @@ def search_chat_with_dreams(prompt):
             return 'Error: Unable to generate a response.'
 
         # If there's a response from GPT-4, return the response along with the search results.
-        if 'arguments' in response and 'discussion' in response['arguments']:
+        if 'arguments' in response:
             response['search_results'] = search_results
             return response
         else:
