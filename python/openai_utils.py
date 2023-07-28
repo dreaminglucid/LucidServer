@@ -6,8 +6,9 @@ import random
 
 from easycompletion import (
     compose_function,
-    openai_function_call,
-    openai_text_call,
+    function_completion,
+    text_completion,
+    chat_completion,
     trim_prompt,
     chunk_prompt,
     count_tokens,
@@ -27,7 +28,7 @@ openai_api_key = config.get("openai", "api_key")
 def get_image_summary(dream_entry):
     try:
         log(f"Generating summary for dream entry: {dream_entry}", type="info")
-        response = openai_text_call(
+        response = text_completion(
             text=f"Awaken to the depths of your subconscious, where dreams transcend reality. Describe the enigmatic tale of your nocturnal journey, where the ethereal dance of {dream_entry} beguiles the senses. Condense this profound experience into a succinct prompt, grounding the essence of your dream in the realms of research, literature, science, mysticism, and ancient wisdom. This prompt will guide the DALLE AI image generation tool by OpenAI, all in under 100 characters.",
             model="gpt-3.5-turbo",
             api_key=openai_api_key,
@@ -51,7 +52,7 @@ def get_image_summary(dream_entry):
 def generate_dream_analysis(prompt, system_content):
     try:
         log(f"Generating GPT response for prompt: {prompt}", type="info")
-        response = openai_text_call(
+        response = text_completion(
             text=f"""
             A profound dream has been shared, echoing with the resonance of {prompt}. Let's embark on a multi-faceted exploration of its depths, guided by the wisdom of diverse fields of human knowledge. 
 
@@ -155,25 +156,28 @@ available_functions = [
 ]
 
 
+from easycompletion import chat_completion
+
 def regular_chat(message):
     try:
         log(f"Generating GPT response for message: {message}", type="info")
         # Provide a default prompt for lucid dreaming conversation
         if not message:
             message = "Let's talk about the fascinating world of lucid dreaming."
-
-        response = openai_text_call(
-            text=f"""
-            {message}
-            
+        
+        system_message = f"""
             Let's delve deeper into the realm of dreams. Draw upon the vast reservoirs of knowledge about dreams from different perspectives - scientific, psychological, philosophical, and mystical. Interpret the dream imagery, unravel its symbolism, and explore its relevance to the dreamer's waking life and personal growth.
 
             In the context of lucid dreaming, discuss techniques for inducing lucidity, the benefits and potential challenges of lucid dreaming, and its implications for understanding consciousness and the human mind.
 
             Weave this understanding into a comprehensive response that provides valuable insights and guidance to the dreamer, all within the constraints of 500 characters.
-            """,
-            model="gpt-3.5-turbo",
-            api_key=openai_api_key,
+            """
+        
+        response = chat_completion(
+            messages = [{"role": "user", "content": message}],
+            system_message = system_message,
+            model='gpt-3.5-turbo',
+            api_key='your_openai_api_key'
         )
 
         log(f"GPT-4 response: {response}", type="info")
@@ -231,7 +235,7 @@ def call_function_by_name(function_name, prompt):
     """
 
     # Call the selected function
-    response = openai_function_call(
+    response = function_completion(
         text=context,  # Use the context as the text for the function call
         functions=[function_to_call],
         function_call=function_to_call["name"],
