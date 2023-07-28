@@ -1,7 +1,7 @@
 from agentlogger import log, print_header, write_to_file
 import time
 from agentmemory import create_memory, get_memories, update_memory, get_memory
-from openai_utils import get_gpt_response, generate_dream_image, get_dream_summary
+from openai_utils import generate_dream_analysis, generate_dream_image, get_image_summary
 
 
 def create_dream(title, date, entry):
@@ -50,7 +50,7 @@ def get_dream_analysis(dream_id, max_retries=5):
         log(f"Fetching dream analysis for dream id {dream_id}.", type="info")
         dream = get_dream(dream_id)
         for _ in range(max_retries):
-            analysis = get_gpt_response(
+            analysis = generate_dream_analysis(
                 dream["metadata"]["entry"], "You are dreaming about"
             )
             if analysis:
@@ -72,7 +72,7 @@ def get_dream_image(dream_id, max_retries=5):
         log(f"Fetching dream image for dream id {dream_id}.", type="info")
         dream = get_dream(dream_id)
         dreams = get_dreams()
-        summary = get_dream_summary(dream["metadata"]["entry"])
+        summary = get_image_summary(dream["metadata"]["entry"])
         for _ in range(max_retries):
             image = generate_dream_image(dreams, dream_id)
             if image:

@@ -24,7 +24,7 @@ openai_api_key = config.get("openai", "api_key")
 
 
 #  ANALYSIS AND IMAGE GENERATION FUNCTIONS
-def get_dream_summary(dream_entry):
+def get_image_summary(dream_entry):
     try:
         log(f"Generating summary for dream entry: {dream_entry}", type="info")
         response = openai_text_call(
@@ -48,7 +48,7 @@ def get_dream_summary(dream_entry):
         return "Error: Unable to generate a summary."
 
 
-def get_gpt_response(prompt, system_content):
+def generate_dream_analysis(prompt, system_content):
     try:
         log(f"Generating GPT response for prompt: {prompt}", type="info")
         response = openai_text_call(
@@ -87,7 +87,7 @@ def generate_dream_image(dreams, dream_id):
         if not dream:
             return None
 
-        summary = get_dream_summary(dream["metadata"]["entry"])
+        summary = get_image_summary(dream["metadata"]["entry"])
 
         data = {
             "prompt": f"A renaissance painting ef {summary}, high quality, lucid dream themed.",
