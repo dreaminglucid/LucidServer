@@ -1,6 +1,9 @@
 # Lucid Journal backend server
 The Lucid Journal backend server of the project is responsible for managing dream data, analyzing dream entries, and generating dream-inspired images using AI models like GPT-3.5/4 and DALLE 2.
 
+![image](https://github.com/cp-james-harbeck/LucidJournalServer/assets/76927280/e368419b-d462-41df-9dbf-a39bbc7a7a27)
+
+
 ## Packages
 We utilize several agent-centric python packages from the [Autonomous Research Group](https://github.com/AutonomousResearchGroup).
 
