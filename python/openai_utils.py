@@ -155,9 +155,6 @@ available_functions = [
     predict_future_function,
 ]
 
-
-from easycompletion import chat_completion
-
 def regular_chat(message):
     try:
         log(f"Generating GPT response for message: {message}", type="info")
@@ -177,7 +174,7 @@ def regular_chat(message):
             messages = [{"role": "user", "content": message}],
             system_message = system_message,
             model='gpt-3.5-turbo',
-            api_key='your_openai_api_key'
+            api_key=openai_api_key
         )
 
         log(f"GPT-4 response: {response}", type="info")
