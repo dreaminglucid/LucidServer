@@ -1,0 +1,43 @@
+# Python
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+*.pyc
+*.pyo
+*.pyd
+*~
+*.bak
+*.swp
+*.pyd
+.DS_Store
+*.egg
+*.egg-info
+dist
+build
+eggs
+parts
+var
+sdist
+develop-eggs
+.installed.cfg
+lib
+lib64
+*.egg-info/
+MANIFEST
+
+# Virtual environment
+venv/
+*.env
+
+# IDEs
+.idea/
+.vscode/
+
+# Logs
+logs/
+*.log
+
+# Other server related directories
+memory/
+/config.ini

@@ -9,10 +9,6 @@ from easycompletion import (
     function_completion,
     text_completion,
     chat_completion,
-    trim_prompt,
-    chunk_prompt,
-    count_tokens,
-    get_tokens,
 )
 from agentmemory import search_memory
 
