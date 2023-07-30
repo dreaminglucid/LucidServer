@@ -144,11 +144,62 @@ predict_future_function = compose_function(
     required_properties=["future_dreams"],
 )
 
+discuss_lucidity_techniques_function = compose_function(
+    name="discuss_lucidity_techniques",
+    description="Discuss various techniques that can help the dreamer achieve lucidity in their dreams. This can include methods like reality checks, mnemonic induction of lucid dreams (MILD), wake back to bed (WBTB), etc. The suggestions can be customized based on the dream patterns of the dreamer.",
+    properties={
+        "lucidity_techniques": {
+            "type": "string",
+            "description": "Discussion on various techniques for achieving lucidity",
+        }
+    },
+    required_properties=["lucidity_techniques"],
+)
+
+create_lucidity_plan_function = compose_function(
+    name="create_lucidity_plan",
+    description="Create a personalized lucidity plan for the dreamer, taking into account their dream patterns, sleep habits, and lifestyle. This could involve a step-by-step routine to follow before bedtime, specific reality checks to perform, or techniques to use when they recognize they are dreaming.",
+    properties={
+        "lucidity_plan": {
+            "type": "string",
+            "description": "A personalized plan designed to help the dreamer achieve lucidity",
+        }
+    },
+    required_properties=["lucidity_plan"],
+)
+
+analyze_dream_signs_function = compose_function(
+    name="analyze_dream_signs",
+    description="Analyze the dreamer's dreams for recurring themes, characters, or situations that could serve as dream signs. Dream signs can be used by the dreamer as triggers for reality checks and help them become lucid in future dreams.",
+    properties={
+        "dream_signs": {
+            "type": "string",
+            "description": "Analysis of potential dream signs within the dreamer's dreams",
+        }
+    },
+    required_properties=["dream_signs"],
+)
+
+track_lucidity_progress_function = compose_function(
+    name="track_lucidity_progress",
+    description="Track the dreamer's progress towards achieving lucidity over time. This could involve comparing the frequency of lucid dreams, the duration of lucidity, or the dreamer's control within the dream. This feedback can be useful for adjusting techniques or plans.",
+    properties={
+        "lucidity_progress": {
+            "type": "string",
+            "description": "Progress tracking of the dreamer's journey towards achieving lucidity",
+        }
+    },
+    required_properties=["lucidity_progress"],
+)
 
 # Define available functions
 available_functions = [
     discuss_emotions_function,
     predict_future_function,
+    discuss_lucidity_techniques_function,
+    create_lucidity_plan_function,
+    analyze_dream_signs_function,
+    track_lucidity_progress_function,
 ]
 
 def regular_chat(message):
