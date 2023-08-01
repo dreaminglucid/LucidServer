@@ -203,18 +203,13 @@ available_functions = [
     track_lucidity_progress_function,
 ]
 
-def regular_chat(message, messages=None):
+def regular_chat(message):
     try:
         log(f"Generating GPT response for message: {message}", type="info")
-
-        all_messages = []
-
-        if messages is not None:
-            all_messages += messages
-
+        # Provide a default prompt for lucid dreaming conversation
         if not message:
             message = "Let's talk about the fascinating world of lucid dreaming."
-
+        
         system_message = f"""
             Let's delve deeper into the realm of dreams. Draw upon the vast reservoirs of knowledge about dreams from different perspectives - scientific, psychological, philosophical, and mystical. Interpret the dream imagery, unravel its symbolism, and explore its relevance to the dreamer's waking life and personal growth.
 
@@ -222,16 +217,10 @@ def regular_chat(message, messages=None):
 
             Weave this understanding into a comprehensive response that provides valuable insights and guidance to the dreamer, all within the constraints of 500 characters.
             """
-
-        # Append the system message to the all_messages list
-        if system_message is not None:
-            all_messages.append({"role": "system", "content": system_message})
-
-        # Append the user's message to the all_messages list
-        all_messages.append({"role": "user", "content": message})
-
+        
         response = chat_completion(
-            messages=all_messages,
+            messages = [{"role": "user", "content": message}],
+            system_message = system_message,
             model='gpt-3.5-turbo',
             api_key=openai_api_key
         )
