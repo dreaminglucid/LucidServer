@@ -9,6 +9,7 @@ from easycompletion import (
     function_completion,
     text_completion,
     chat_completion,
+    count_tokens,
 )
 from agentmemory import search_memory
 
@@ -202,13 +203,18 @@ available_functions = [
     track_lucidity_progress_function,
 ]
 
-def regular_chat(message):
+def regular_chat(message, messages=None):
     try:
         log(f"Generating GPT response for message: {message}", type="info")
-        # Provide a default prompt for lucid dreaming conversation
+
+        all_messages = []
+
+        if messages is not None:
+            all_messages += messages
+
         if not message:
             message = "Let's talk about the fascinating world of lucid dreaming."
-        
+
         system_message = f"""
             Let's delve deeper into the realm of dreams. Draw upon the vast reservoirs of knowledge about dreams from different perspectives - scientific, psychological, philosophical, and mystical. Interpret the dream imagery, unravel its symbolism, and explore its relevance to the dreamer's waking life and personal growth.
 
@@ -216,10 +222,16 @@ def regular_chat(message):
 
             Weave this understanding into a comprehensive response that provides valuable insights and guidance to the dreamer, all within the constraints of 500 characters.
             """
-        
+
+        # Append the system message to the all_messages list
+        if system_message is not None:
+            all_messages.append({"role": "system", "content": system_message})
+
+        # Append the user's message to the all_messages list
+        all_messages.append({"role": "user", "content": message})
+
         response = chat_completion(
-            messages = [{"role": "user", "content": message}],
-            system_message = system_message,
+            messages=all_messages,
             model='gpt-3.5-turbo',
             api_key=openai_api_key
         )
@@ -257,7 +269,7 @@ def search_dreams(keyword):
     return dreams
 
 
-def call_function_by_name(function_name, prompt):
+def call_function_by_name(function_name, prompt, messages):
     # Get the corresponding function from the available_functions dictionary
     function_to_call = next(
         (func for func in available_functions if func["name"] == function_name), None
@@ -272,15 +284,15 @@ def call_function_by_name(function_name, prompt):
         )
         function_to_call = random.choice(available_functions)
 
-    # Create a conversational context
-    context = f"""
-    User: {prompt}
-    System: I see. You're asking me to {function_to_call['description']}. Let's delve into this, ill provide you a super intuitive and insightful and well structured response in under 300 chaarcters as your AI agent dream journal guide, Emris.
-    """
+    all_messages = []
+
+    if messages is not None:
+        all_messages += messages
 
     # Call the selected function
     response = function_completion(
-        text=context,  # Use the context as the text for the function call
+        text=prompt,  # Use the last user message as the text for the function call
+        messages=all_messages,  # Include the message history
         functions=[function_to_call],
         function_call=function_to_call["name"],
         api_key=openai_api_key,
@@ -288,36 +300,45 @@ def call_function_by_name(function_name, prompt):
 
     return response
 
-
-def search_chat_with_dreams(function_name, prompt):
+def search_chat_with_dreams(function_name, prompt, messages=None):
     try:
-        # Observe: Log the received prompt
+        # Log the received prompt
         log(f"Received prompt: {prompt}", type="info")
+
+        if messages is None:
+            messages = []
+
+        all_messages = []  # Initialize all_messages list
+        log("Initialized all_messages list.", type="info")
+
+        # Count the tokens in the prompt
+        prompt_tokens = count_tokens(prompt)
+        log(f"Counted {prompt_tokens} tokens in the prompt.", type="info")
 
         # Search the dreams based on the entire prompt
         search_results = search_dreams(prompt)
 
-        # Create the conversational context
-        context = ""
-
-        # If we have search results, add them to the context.
+        # If we have search results, add them to the messages.
         if search_results:
-            log("Search results found.", type="info")
+            log("Search results found. Adding to all_messages list.", type="info")
             for dream in search_results[:]:  # Limit to the top 3 results
-                context += f"""
-                System: I found a relevant dream in the database. The dream, titled "{dream['metadata']['title']}", was recorded on {dream['metadata']['date']}. Here's the dream entry: "{dream['metadata']['entry']}". The dream was analyzed as follows: "{dream['metadata'].get('analysis', 'Analysis not available')}".
-                """
+                message = f"I found a relevant dream in the database. The dream, titled '{dream['metadata']['title']}', was recorded on {dream['metadata']['date']}. Here's the dream entry: '{dream['metadata']['entry']}'. The dream was analyzed as follows: '{dream['metadata'].get('analysis', 'Analysis not available')}'."
+                all_messages.append({"role": "system", "content": message})
+                log(f"Added system message: {message}", type="info")
         else:
             log("No relevant dreams found in the database.", type="info")
 
-        # Append the user's original prompt to the context.
-        context += f"User: {prompt}"
+        # Append the user's original prompt to the messages.
+        all_messages.append({"role": "user", "content": prompt})
+        log(f"Added user message: {prompt}", type="info")
 
-        log(f"Final context: {context}", type="info")  # Log the final context
+        # Log the final messages
+        log(f"Final messages: {all_messages}", type="info")
 
-        # Decide: Generate response using EasyCompletion, calling function based on user intent
-        # Pass the context, not just the prompt
-        response = call_function_by_name(function_name, context)
+        # Generate response using EasyCompletion, calling function based on user intent
+        # Pass the all_messages, not just the prompt
+        log("Calling function by name with all_messages list.", type="info")
+        response = call_function_by_name(function_name, prompt, all_messages)
 
         log(f"GPT-4 response: {response}", type="info")
 
@@ -338,4 +359,3 @@ def search_chat_with_dreams(function_name, prompt):
             f"Error generating GPT response with search: {e}", type="error", color="red"
         )
         return "Error: Unable to generate a response."
-
