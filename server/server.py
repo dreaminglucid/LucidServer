@@ -174,14 +174,30 @@ def get_dream_endpoint(dream_id):
 @app.route("/api/dreams/<string:dream_id>/analysis", methods=["GET"])
 def get_dream_analysis_endpoint(dream_id):
     try:
-        log(
-            f"Received GET request at /api/dreams/{dream_id}/analysis", type="info")
+        # Decode and verify JWT
+        id_token = request.headers.get("Authorization")
+        if not id_token:
+            raise Exception("No authorization token provided")
+        id_token = id_token.split(" ")[1]  # Add this line
+        header = jwt.get_unverified_header(id_token)
+        public_key = get_apple_public_key(header["kid"])
+        decoded_token = jwt.decode(id_token, public_key, audience="com.jamesfeura.lucidjournal", algorithms=['RS256'])
+
+        # Extract the user's email from the decoded token
+        userEmail = decoded_token.get("email")
+
+        # Get the dream
+        dream = get_dream(dream_id)
+        if dream is None or dream["metadata"]["userEmail"] != userEmail:
+            raise ValueError(f"Dream with id {dream_id} not found.")
+        
+        log(f"Received GET request at /api/dreams/{dream_id}/analysis", type="info")
         analysis = get_dream_analysis(dream_id)
-        log(
-            f"Successfully retrieved analysis for dream_id {dream_id}: {analysis}",
-            type="info",
-        )
+        log(f"Successfully retrieved analysis for dream_id {dream_id}: {analysis}", type="info")
         return jsonify(analysis)
+    except jwt.InvalidTokenError:
+        log(f"Invalid ID token", type="error")
+        return jsonify({"error": "Invalid ID token"}), 401
     except ValueError as e:
         log(f"Error occurred: {str(e)}", type="error", color="red")
         return jsonify({"error": str(e)}), 404
@@ -193,12 +209,30 @@ def get_dream_analysis_endpoint(dream_id):
 @app.route("/api/dreams/<string:dream_id>/image", methods=["GET"])
 def get_dream_image_endpoint(dream_id):
     try:
-        log(
-            f"Received GET request at /api/dreams/{dream_id}/image", type="info")
+        # Decode and verify JWT
+        id_token = request.headers.get("Authorization")
+        if not id_token:
+            raise Exception("No authorization token provided")
+        id_token = id_token.split(" ")[1]  # Add this line
+        header = jwt.get_unverified_header(id_token)
+        public_key = get_apple_public_key(header["kid"])
+        decoded_token = jwt.decode(id_token, public_key, audience="com.jamesfeura.lucidjournal", algorithms=['RS256'])
+
+        # Extract the user's email from the decoded token
+        userEmail = decoded_token.get("email")
+
+        # Get the dream
+        dream = get_dream(dream_id)
+        if dream is None or dream["metadata"]["userEmail"] != userEmail:
+            raise ValueError(f"Dream with id {dream_id} not found.")
+
+        log(f"Received GET request at /api/dreams/{dream_id}/image", type="info")
         image = get_dream_image(dream_id)
-        log(
-            f"Successfully retrieved image for dream_id {dream_id}", type="info")
+        log(f"Successfully retrieved image for dream_id {dream_id}", type="info")
         return jsonify({"image": image})
+    except jwt.InvalidTokenError:
+        log(f"Invalid ID token", type="error")
+        return jsonify({"error": "Invalid ID token"}), 401
     except ValueError as e:
         log(f"Error occurred: {str(e)}", type="error", color="red")
         return jsonify({"error": str(e)}), 404
