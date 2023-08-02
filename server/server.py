@@ -239,25 +239,8 @@ def get_dream_image_endpoint(dream_id):
     except Exception as e:
         log(f"Unhandled exception occurred: {traceback.format_exc()}", type="error")
         return jsonify({"error": "Internal server error"}), 500
-
-
-@app.route("/api/chat", methods=["POST"])
-@use_args(regular_chat_args)
-def chat_endpoint(args):
-    try:
-        log(
-            f"Received POST request at /api/chat with data {args}",
-            type="info",
-        )
-        response = regular_chat(args["message"])
-        log(f"Successfully retrieved chat response: {response}", type="info")
-
-        return jsonify({"response": response})
-    except Exception as e:
-        log(f"Unhandled exception occurred: {traceback.format_exc()}", type="error")
-        return jsonify({"error": "Internal server error"}), 500
-
-
+    
+    
 @app.route("/api/dreams/search", methods=["POST"])
 @use_args(search_args)
 def search_dreams_endpoint(args):
@@ -273,6 +256,42 @@ def search_dreams_endpoint(args):
         return jsonify({"error": "Internal server error"}), 500
 
 
+@app.route("/api/chat", methods=["POST"])
+@use_args(regular_chat_args)
+def chat_endpoint(args):
+    try:
+        log(
+            f"Received POST request at /api/chat with data {args}",
+            type="info",
+        )
+
+        # Decode and verify JWT
+        id_token = request.headers.get("Authorization")
+        if not id_token:
+            raise Exception("No authorization token provided")
+        id_token = id_token.split(" ")[1]  # Extract the token from the header
+        header = jwt.get_unverified_header(id_token)
+        public_key = get_apple_public_key(header["kid"])
+        decoded_token = jwt.decode(id_token, public_key, audience="com.jamesfeura.lucidjournal", algorithms=['RS256'])
+
+        # Extract the user's email from the decoded token
+        userEmail = decoded_token.get("email")
+
+        # Here, you can check if the user has premium membership before proceeding
+        # ...
+
+        response = regular_chat(args["message"])
+        log(f"Successfully retrieved chat response: {response}", type="info")
+
+        return jsonify({"response": response})
+    except jwt.InvalidTokenError:
+        log(f"Invalid ID token", type="error")
+        return jsonify({"error": "Invalid ID token"}), 401
+    except Exception as e:
+        log(f"Unhandled exception occurred: {traceback.format_exc()}", type="error")
+        return jsonify({"error": "Internal server error"}), 500
+
+
 @app.route("/api/dreams/search-chat", methods=["POST"])
 @use_args(chat_args)
 def search_chat_with_dreams_endpoint(args):
@@ -281,6 +300,22 @@ def search_chat_with_dreams_endpoint(args):
             f"Received POST request at /api/dreams/search-chat with data {args}",
             type="info",
         )
+
+        # Decode and verify JWT
+        id_token = request.headers.get("Authorization")
+        if not id_token:
+            raise Exception("No authorization token provided")
+        id_token = id_token.split(" ")[1]  # Extract the token from the header
+        header = jwt.get_unverified_header(id_token)
+        public_key = get_apple_public_key(header["kid"])
+        decoded_token = jwt.decode(id_token, public_key, audience="com.jamesfeura.lucidjournal", algorithms=['RS256'])
+
+        # Extract the user's email from the decoded token
+        userEmail = decoded_token.get("email")
+
+        # Here, you can check if the user has premium membership before proceeding
+        # ...
+
         response = search_chat_with_dreams(
             args["function_name"], args["prompt"])
         log(
@@ -288,6 +323,9 @@ def search_chat_with_dreams_endpoint(args):
 
         # return the entire response object, not just 'arguments'
         return jsonify(response)
+    except jwt.InvalidTokenError:
+        log(f"Invalid ID token", type="error")
+        return jsonify({"error": "Invalid ID token"}), 401
     except Exception as e:
         log(f"Unhandled exception occurred: {traceback.format_exc()}", type="error")
         return jsonify({"error": "Internal server error"}), 500
