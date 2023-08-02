@@ -1,4 +1,7 @@
 from flask import Flask, request, jsonify
+import jwt
+import requests
+import json
 from webargs import fields, validate
 from webargs.flaskparser import use_args
 from database import (
@@ -18,13 +21,12 @@ app = Flask(__name__)
 
 print_header("LUCID JOURNAL", font="slant", color="cyan")
 
-# Request schemas
 dream_args = {
     "title": fields.Str(required=True),
     "date": fields.Str(required=True),
     "entry": fields.Str(required=True),
+    "id_token": fields.Str(required=True),  # add this line
 }
-
 update_dream_args = {
     "analysis": fields.Str(),
     "image": fields.Str(),
@@ -44,13 +46,36 @@ regular_chat_args = {
 }
 
 
+def get_apple_public_key(kid):
+    keys = requests.get("https://appleid.apple.com/auth/keys").json()["keys"]
+    for key_dict in keys:
+        if key_dict["kid"] == kid:
+            public_key = jwt.algorithms.RSAAlgorithm.from_jwk(json.dumps(key_dict))
+            return public_key
+    raise Exception(f"No matching key found for kid {kid}")
+
+
 @app.route("/api/dreams", methods=["POST"])
 @use_args(dream_args)
 def create_dream_endpoint(args):
     try:
         log(
             f"Received POST request at /api/dreams with data {args}", type="info")
-        dream = create_dream(args["title"], args["date"], args["entry"])
+        
+        # Decode and verify JWT
+        id_token = args.get("id_token")
+        if not id_token:
+            log(f"No ID token provided", type="error")
+            return jsonify({"error": "No ID token provided"}), 400
+
+        header = jwt.get_unverified_header(id_token)
+        public_key = get_apple_public_key(header["kid"])
+        decoded_token = jwt.decode(id_token, public_key, audience="com.jamesfeura.lucidjournal", algorithms=['RS256'])
+        
+        # Extract the user's email from the decoded token
+        userEmail = decoded_token.get("email")
+        
+        dream = create_dream(args["title"], args["date"], args["entry"], userEmail)
         if dream is None:
             log(f"Dream creation failed with data {args}", type="error")
             return jsonify({"error": "Dream creation failed"}), 500
@@ -59,6 +84,9 @@ def create_dream_endpoint(args):
             return jsonify({"error": "Dream ID not generated"}), 500
         log(f"Successfully created dream with data {dream}", type="info")
         return jsonify(dream), 200
+    except jwt.InvalidTokenError:
+        log(f"Invalid ID token", type="error")
+        return jsonify({"error": "Invalid ID token"}), 401
     except Exception as e:
         log(f"Unhandled exception occurred: {traceback.format_exc()}", type="error")
         return jsonify({"error": "Internal server error"}), 500
@@ -94,10 +122,16 @@ def update_dream_endpoint(args, dream_id):
 @app.route("/api/dreams", methods=["GET"])
 def get_dreams_endpoint():
     try:
-        log("Received GET request at /api/dreams", type="info")
-        dreams = get_dreams()
-        log(f"Successfully retrieved dreams: {dreams}", type="info")
-        return jsonify(dreams)
+        id_token = request.headers.get("Authorization").split(" ")[1]  # Extract the token from the header
+        header = jwt.get_unverified_header(id_token)
+        public_key = get_apple_public_key(header["kid"])
+        decoded_token = jwt.decode(id_token, public_key, audience="com.jamesfeura.lucidjournal", algorithms=['RS256'])
+        userEmail = decoded_token.get("email")
+        dreams = get_dreams(userEmail)
+        return jsonify(dreams), 200
+    except jwt.InvalidTokenError:
+        log(f"Invalid ID token", type="error")
+        return jsonify({"error": "Invalid ID token"}), 401
     except Exception as e:
         log(f"Unhandled exception occurred: {traceback.format_exc()}", type="error")
         return jsonify({"error": "Internal server error"}), 500

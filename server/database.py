@@ -4,8 +4,8 @@ from agentmemory import create_memory, get_memories, update_memory, get_memory
 from openai_utils import generate_dream_analysis, generate_dream_image, get_image_summary
 
 
-def create_dream(title, date, entry):
-    dream = {"title": title, "date": date, "entry": entry}
+def create_dream(title, date, entry, userEmail):
+    dream = {"title": title, "date": date, "entry": entry, "userEmail": userEmail}
     memory_id = create_memory("dreams", f"{title}\n{entry}", metadata=dream)
     log("Dream created successfully.", type="info")
     dream["id"] = memory_id
@@ -31,7 +31,7 @@ def get_dream(dream_id):
         return None
 
 
-def get_dreams():
+def get_dreams(userEmail):
     log("Fetching all dreams.", type="info")
     memories = get_memories("dreams", n_results=2222)
     dreams = [
@@ -40,7 +40,7 @@ def get_dreams():
             "document": memory["document"],
             "metadata": memory["metadata"],
         }
-        for memory in memories
+        for memory in memories if "userEmail" in memory["metadata"] and memory["metadata"]["userEmail"] == userEmail
     ]
     return dreams
 
@@ -71,7 +71,8 @@ def get_dream_image(dream_id, max_retries=5):
     try:
         log(f"Fetching dream image for dream id {dream_id}.", type="info")
         dream = get_dream(dream_id)
-        dreams = get_dreams()
+        userEmail = dream["metadata"]["userEmail"]  # get userEmail from dream metadata
+        dreams = get_dreams(userEmail)  # pass userEmail to get_dreams()
         summary = get_image_summary(dream["metadata"]["entry"])
         for _ in range(max_retries):
             image = generate_dream_image(dreams, dream_id)
