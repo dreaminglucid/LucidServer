@@ -137,19 +137,35 @@ def get_dreams_endpoint():
         return jsonify({"error": "Internal server error"}), 500
 
 
-@app.route("/api/dreams/<string:dream_id>", methods=["GET"])
+@app.route("/api/dreams/<dream_id>", methods=["GET"])
 def get_dream_endpoint(dream_id):
     try:
         log(f"Received GET request at /api/dreams/{dream_id}", type="info")
+
+        # Decode and verify JWT
+        id_token = request.headers.get("Authorization")
+        if not id_token:
+            raise Exception("No authorization token provided")
+        id_token = id_token.split(" ")[1]  # Add this line
+        header = jwt.get_unverified_header(id_token)
+        public_key = get_apple_public_key(header["kid"])
+        decoded_token = jwt.decode(id_token, public_key, audience="com.jamesfeura.lucidjournal", algorithms=['RS256'])
+        
+        # Extract the user's email from the decoded token
+        userEmail = decoded_token.get("email")
+
         dream = get_dream(dream_id)
         if dream is None:
-            log(f"Dream not found for dream_id {dream_id}", type="error")
-            return jsonify({"error": "Dream not found"}), 404
-        log(
-            f"Successfully retrieved dream with dream_id {dream_id}: {dream}",
-            type="info",
-        )
-        return jsonify(dream)
+            log(f"Dream with id {dream_id} not found.", type="error")
+            return jsonify({"error": f"Dream with id {dream_id} not found."}), 404
+        if dream["metadata"]["userEmail"] != userEmail:
+            log(f"Unauthorized access attempt to dream with id {dream_id} by user {userEmail}.", type="error")
+            return jsonify({"error": "Unauthorized access."}), 401
+        log(f"Successfully fetched dream with id {dream_id}", type="info")
+        return jsonify(dream), 200
+    except jwt.InvalidTokenError:
+        log(f"Invalid ID token", type="error")
+        return jsonify({"error": "Invalid ID token"}), 401
     except Exception as e:
         log(f"Unhandled exception occurred: {traceback.format_exc()}", type="error")
         return jsonify({"error": "Internal server error"}), 500
