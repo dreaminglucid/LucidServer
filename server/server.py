@@ -248,9 +248,26 @@ def search_dreams_endpoint(args):
         log(
             f"Received POST request at /api/dreams/search with data {args}", type="info"
         )
-        dreams = search_dreams(args["query"])
+
+        # Decode and verify JWT
+        id_token = request.headers.get("Authorization")
+        if not id_token:
+            raise Exception("No authorization token provided")
+        id_token = id_token.split(" ")[1]  # Extract the token from the header
+        header = jwt.get_unverified_header(id_token)
+        public_key = get_apple_public_key(header["kid"])
+        decoded_token = jwt.decode(id_token, public_key, audience="com.jamesfeura.lucidjournal", algorithms=['RS256'])
+
+        # Extract the user's email from the decoded token
+        userEmail = decoded_token.get("email")
+
+        # You might want to modify the search_dreams function to limit search results to the authenticated user
+        dreams = search_dreams(args["query"], userEmail)
         log(f"Successfully retrieved search results: {dreams}", type="info")
         return jsonify(dreams)
+    except jwt.InvalidTokenError:
+        log(f"Invalid ID token", type="error")
+        return jsonify({"error": "Invalid ID token"}), 401
     except Exception as e:
         log(f"Unhandled exception occurred: {traceback.format_exc()}", type="error")
         return jsonify({"error": "Internal server error"}), 500
@@ -276,9 +293,6 @@ def chat_endpoint(args):
 
         # Extract the user's email from the decoded token
         userEmail = decoded_token.get("email")
-
-        # Here, you can check if the user has premium membership before proceeding
-        # ...
 
         response = regular_chat(args["message"])
         log(f"Successfully retrieved chat response: {response}", type="info")
@@ -317,7 +331,7 @@ def search_chat_with_dreams_endpoint(args):
         # ...
 
         response = search_chat_with_dreams(
-            args["function_name"], args["prompt"])
+            args["function_name"], args["prompt"], userEmail)  # Pass userEmail as an argument
         log(
             f"Successfully retrieved chat search results: {response}", type="info")
 

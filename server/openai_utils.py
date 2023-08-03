@@ -240,8 +240,8 @@ def regular_chat(message):
         return "Error: Unable to generate a response."
 
 
-def search_dreams(keyword):
-    log(f"Searching dreams for keyword: {keyword}.", type="info")
+def search_dreams(keyword, user_email):
+    log(f"Searching dreams for keyword: {keyword} and user email: {user_email}.", type="info")
     search_results = search_memory("dreams", keyword, n_results=100)
     dreams = [
         {
@@ -254,6 +254,7 @@ def search_dreams(keyword):
             },
         }
         for memory in search_results
+        if memory['metadata']['userEmail'] == user_email  # filter results by user email
     ]
     return dreams
 
@@ -289,7 +290,7 @@ def call_function_by_name(function_name, prompt, messages):
 
     return response
 
-def search_chat_with_dreams(function_name, prompt, messages=None):
+def search_chat_with_dreams(function_name, prompt, user_email, messages=None):
     try:
         # Log the received prompt
         log(f"Received prompt: {prompt}", type="info")
@@ -305,7 +306,7 @@ def search_chat_with_dreams(function_name, prompt, messages=None):
         log(f"Counted {prompt_tokens} tokens in the prompt.", type="info")
 
         # Search the dreams based on the entire prompt
-        search_results = search_dreams(prompt)
+        search_results = search_dreams(prompt, user_email)
 
         # If we have search results, add them to the messages.
         if search_results:
