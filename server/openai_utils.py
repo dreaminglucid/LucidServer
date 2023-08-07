@@ -78,7 +78,7 @@ def generate_dream_analysis(prompt, system_content):
         return "Error: Unable to generate a response."
 
 
-def generate_dream_image(dreams, dream_id):
+def generate_dream_image(dreams, dream_id, style="renaissance"):
     try:
         log(f"Generating image for dream id: {dream_id}", type="info")
         dream = next((d for d in dreams if d["id"] == dream_id), None)
@@ -87,21 +87,37 @@ def generate_dream_image(dreams, dream_id):
 
         summary = get_image_summary(dream["metadata"]["entry"])
 
+        # Adjust prompt based on style
+        if style == "renaissance":
+            style_description = "A renaissance painting of"
+        elif style == "abstract":
+            style_description = "An abstract representation of"
+        elif style == "modern":
+            style_description = "A modern artwork of"
+        else:
+            style_description = "A renaissance painting of"  # default
+
+        prompt = f"{style_description} {summary}, high quality, lucid dream themed."
         data = {
-            "prompt": f"A renaissance painting ef {summary}, high quality, lucid dream themed.",
+            "prompt": prompt,
             "n": 1,
             "size": "256x256",
         }
+
+        # Log the generated prompt
+        log(f"Generated prompt: {prompt}", type="info")
 
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {openai_api_key}",
         }
+
         response = requests.post(
             "https://api.openai.com/v1/images/generations",
             data=json.dumps(data),
             headers=headers,
         )
+
         response_data = response.json()
 
         if "data" in response_data and len(response_data["data"]) > 0:
@@ -118,7 +134,6 @@ def generate_dream_image(dreams, dream_id):
     except Exception as e:
         log(f"Error generating dream-inspired image: {e}", type="error", color="red")
         return None
-
 
 # SEARCH WITH CHAT FUNCTIONS
 discuss_emotions_function = compose_function(
@@ -210,7 +225,7 @@ def regular_chat(message):
         if not message:
             message = "Let's talk about the fascinating world of lucid dreaming."
         
-        system_message = f"""
+        initial_message = """
             Let's delve deeper into the realm of dreams. Draw upon the vast reservoirs of knowledge about dreams from different perspectives - scientific, psychological, philosophical, and mystical. Interpret the dream imagery, unravel its symbolism, and explore its relevance to the dreamer's waking life and personal growth.
 
             In the context of lucid dreaming, discuss techniques for inducing lucidity, the benefits and potential challenges of lucid dreaming, and its implications for understanding consciousness and the human mind.
@@ -218,9 +233,14 @@ def regular_chat(message):
             Weave this understanding into a comprehensive response that provides valuable insights and guidance to the dreamer, all within the constraints of 500 characters.
             """
         
+        # Combine system_message and user message
+        combined_messages = [
+            {"role": "user", "content": initial_message},
+            {"role": "user", "content": message}
+        ]
+        
         response = chat_completion(
-            messages = [{"role": "user", "content": message}],
-            system_message = system_message,
+            messages=combined_messages,
             model='gpt-3.5-turbo',
             api_key=openai_api_key
         )

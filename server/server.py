@@ -46,6 +46,10 @@ regular_chat_args = {
 }
 
 
+# Placeholder for user's image style preferences
+user_style_preferences = {}
+
+
 def get_apple_public_key(kid):
     keys = requests.get("https://appleid.apple.com/auth/keys").json()["keys"]
     for key_dict in keys:
@@ -213,7 +217,7 @@ def get_dream_image_endpoint(dream_id):
         id_token = request.headers.get("Authorization")
         if not id_token:
             raise Exception("No authorization token provided")
-        id_token = id_token.split(" ")[1]  # Add this line
+        id_token = id_token.split(" ")[1]  # Extract token from Bearer
         header = jwt.get_unverified_header(id_token)
         public_key = get_apple_public_key(header["kid"])
         decoded_token = jwt.decode(id_token, public_key, audience="com.jamesfeura.lucidjournal", algorithms=['RS256'])
@@ -227,9 +231,16 @@ def get_dream_image_endpoint(dream_id):
             raise ValueError(f"Dream with id {dream_id} not found.")
 
         log(f"Received GET request at /api/dreams/{dream_id}/image", type="info")
-        image = get_dream_image(dream_id)
+
+        # Here, you'll retrieve the user's preferred style. For now, this is a placeholder:
+        # In a real-world scenario, you would fetch this from the database or user settings.
+# Inside get_dream_image_endpoint
+        userPreferredStyle = user_style_preferences.get(userEmail, "renaissance")
+
+        image = get_dream_image(dream_id, userPreferredStyle)
         log(f"Successfully retrieved image for dream_id {dream_id}", type="info")
         return jsonify({"image": image})
+
     except jwt.InvalidTokenError:
         log(f"Invalid ID token", type="error")
         return jsonify({"error": "Invalid ID token"}), 401
@@ -239,6 +250,33 @@ def get_dream_image_endpoint(dream_id):
     except Exception as e:
         log(f"Unhandled exception occurred: {traceback.format_exc()}", type="error")
         return jsonify({"error": "Internal server error"}), 500
+    
+    
+@app.route("/api/user/image-style", methods=["POST"])
+def update_image_style():
+    try:
+        # Decode and verify JWT
+        id_token = request.headers.get("Authorization")
+        if not id_token:
+            raise Exception("No authorization token provided")
+        id_token = id_token.split(" ")[1]
+        header = jwt.get_unverified_header(id_token)
+        public_key = get_apple_public_key(header["kid"])
+        decoded_token = jwt.decode(id_token, public_key, audience="com.jamesfeura.lucidjournal", algorithms=['RS256'])
+
+        # Extract the user's email from the decoded token
+        userEmail = decoded_token.get("email")
+
+        # Update the user's image style preference
+        style = request.json.get("style")
+        user_style_preferences[userEmail] = style
+
+        return jsonify({"status": "success", "message": "Image style updated!"})
+
+    except Exception as e:
+        log(f"Unhandled exception occurred: {traceback.format_exc()}", type="error")
+        return jsonify({"status": "error", "message": str(e)}), 500
+    
     
     
 @app.route("/api/dreams/search", methods=["POST"])
