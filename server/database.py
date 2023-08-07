@@ -67,7 +67,7 @@ def get_dream_analysis(dream_id, max_retries=5):
         return None
 
 
-def get_dream_image(dream_id, style="renaissance", max_retries=5):
+def get_dream_image(dream_id, style="renaissance", quality="low", max_retries=5):
     try:
         log(f"Fetching dream image for dream id {dream_id}.", type="info")
         
@@ -79,7 +79,7 @@ def get_dream_image(dream_id, style="renaissance", max_retries=5):
         dreams = get_dreams(userEmail)  # pass userEmail to get_dreams()
         summary = get_image_summary(dream["metadata"]["entry"])
         for _ in range(max_retries):
-            image = generate_dream_image(dreams, dream_id, style)
+            image = generate_dream_image(dreams, dream_id, style, quality)
             if image:
                 return image
             time.sleep(5)

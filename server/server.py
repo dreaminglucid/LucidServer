@@ -237,7 +237,12 @@ def get_dream_image_endpoint(dream_id):
 # Inside get_dream_image_endpoint
         userPreferredStyle = user_style_preferences.get(userEmail, "renaissance")
 
-        image = get_dream_image(dream_id, userPreferredStyle)
+        # Fetch the user's preferred style and quality
+        userPreferredStyle = user_style_preferences.get(userEmail, {}).get("style", "renaissance")
+        userPreferredQuality = user_style_preferences.get(userEmail, {}).get("quality", "low")
+
+        image = get_dream_image(dream_id, userPreferredStyle, userPreferredQuality)
+
         log(f"Successfully retrieved image for dream_id {dream_id}", type="info")
         return jsonify({"image": image})
 
@@ -278,7 +283,44 @@ def update_image_style():
         return jsonify({"status": "error", "message": str(e)}), 500
     
     
+@app.route("/api/user/image-quality", methods=["POST"])
+def set_user_image_quality():
+    try:
+        # Decode and verify JWT
+        id_token = request.headers.get("Authorization")
+        if not id_token:
+            raise Exception("No authorization token provided")
+        id_token = id_token.split(" ")[1]  # Extract token from Bearer
+        header = jwt.get_unverified_header(id_token)
+        public_key = get_apple_public_key(header["kid"])
+        decoded_token = jwt.decode(id_token, public_key, audience="com.jamesfeura.lucidjournal", algorithms=['RS256'])
+
+        # Extract the user's email from the decoded token
+        userEmail = decoded_token.get("email")
+
+        # Extract the quality from the request body
+        data = request.get_json()
+        quality = data.get("quality")
+
+        # Validate quality
+        if quality not in ["low", "medium", "high"]:
+            return jsonify({"error": "Invalid image quality value"}), 400
+
+        # Set the quality in the user_style_preferences dictionary
+        if userEmail not in user_style_preferences or type(user_style_preferences[userEmail]) is not dict:
+            user_style_preferences[userEmail] = {}
+        user_style_preferences[userEmail]["quality"] = quality
+
+        return jsonify({"message": "Image quality preference updated successfully."})
+
+    except jwt.InvalidTokenError:
+        log(f"Invalid ID token", type="error")
+        return jsonify({"error": "Invalid ID token"}), 401
+    except Exception as e:
+        log(f"Unhandled exception occurred: {traceback.format_exc()}", type="error")
+        return jsonify({"error": "Internal server error"}), 500
     
+       
 @app.route("/api/dreams/search", methods=["POST"])
 @use_args(search_args)
 def search_dreams_endpoint(args):

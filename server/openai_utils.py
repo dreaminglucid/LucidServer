@@ -78,7 +78,7 @@ def generate_dream_analysis(prompt, system_content):
         return "Error: Unable to generate a response."
 
 
-def generate_dream_image(dreams, dream_id, style="renaissance"):
+def generate_dream_image(dreams, dream_id, style="renaissance", quality="low"):
     try:
         log(f"Generating image for dream id: {dream_id}", type="info")
         dream = next((d for d in dreams if d["id"] == dream_id), None)
@@ -96,14 +96,24 @@ def generate_dream_image(dreams, dream_id, style="renaissance"):
             style_description = "A modern artwork of"
         else:
             style_description = "A renaissance painting of"  # default
+            
+        quality_resolution_map = {
+            "low": "256x256",
+            "medium": "512x512",
+            "high": "1024x1024"
+        }
+        resolution = quality_resolution_map.get(quality, "256x256")
+        
+        # Log the image quality and resolution
+        log(f"Using image quality: {quality} with resolution: {resolution}", type="info")
 
         prompt = f"{style_description} {summary}, high quality, lucid dream themed."
         data = {
             "prompt": prompt,
             "n": 1,
-            "size": "256x256",
+            "size": resolution,
         }
-
+        
         # Log the generated prompt
         log(f"Generated prompt: {prompt}", type="info")
 
