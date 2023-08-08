@@ -1,7 +1,5 @@
 from flask import Flask, request, jsonify
-from jwt import JWT
-import jwt.algorithms
-
+import jwt
 import requests
 import json
 from webargs import fields, validate
