@@ -73,7 +73,7 @@ def create_dream_endpoint(args):
             log(f"No ID token provided", type="error")
             return jsonify({"error": "No ID token provided"}), 400
 
-        header = jwt.get_unverified_header(id_token)
+        header = jwt.get_unverified_headers(id_token)
         public_key = get_apple_public_key(header["kid"])
         decoded_token = jwt.decode(id_token, public_key, audience="com.jamesfeura.lucidjournal", algorithms=['RS256'])
         
@@ -128,7 +128,7 @@ def update_dream_endpoint(args, dream_id):
 def get_dreams_endpoint():
     try:
         id_token = request.headers.get("Authorization").split(" ")[1]  # Extract the token from the header
-        header = jwt.get_unverified_header(id_token)
+        header = jwt.get_unverified_headers(id_token)
         public_key = get_apple_public_key(header["kid"])
         decoded_token = jwt.decode(id_token, public_key, audience="com.jamesfeura.lucidjournal", algorithms=['RS256'])
         userEmail = decoded_token.get("email")
@@ -152,7 +152,7 @@ def get_dream_endpoint(dream_id):
         if not id_token:
             raise Exception("No authorization token provided")
         id_token = id_token.split(" ")[1]  # Add this line
-        header = jwt.get_unverified_header(id_token)
+        header = jwt.get_unverified_headers(id_token)
         public_key = get_apple_public_key(header["kid"])
         decoded_token = jwt.decode(id_token, public_key, audience="com.jamesfeura.lucidjournal", algorithms=['RS256'])
         
@@ -184,7 +184,7 @@ def get_dream_analysis_endpoint(dream_id):
         if not id_token:
             raise Exception("No authorization token provided")
         id_token = id_token.split(" ")[1]  # Add this line
-        header = jwt.get_unverified_header(id_token)
+        header = jwt.get_unverified_headers(id_token)
         public_key = get_apple_public_key(header["kid"])
         decoded_token = jwt.decode(id_token, public_key, audience="com.jamesfeura.lucidjournal", algorithms=['RS256'])
 
@@ -219,7 +219,7 @@ def get_dream_image_endpoint(dream_id):
         if not id_token:
             raise Exception("No authorization token provided")
         id_token = id_token.split(" ")[1]  # Extract token from Bearer
-        header = jwt.get_unverified_header(id_token)
+        header = jwt.get_unverified_headers(id_token)
         public_key = get_apple_public_key(header["kid"])
         decoded_token = jwt.decode(id_token, public_key, audience="com.jamesfeura.lucidjournal", algorithms=['RS256'])
 
@@ -266,7 +266,7 @@ def update_image_style():
         if not id_token:
             raise Exception("No authorization token provided")
         id_token = id_token.split(" ")[1]
-        header = jwt.get_unverified_header(id_token)
+        header = jwt.get_unverified_headers(id_token)
         public_key = get_apple_public_key(header["kid"])
         decoded_token = jwt.decode(id_token, public_key, audience="com.jamesfeura.lucidjournal", algorithms=['RS256'])
 
@@ -292,7 +292,7 @@ def set_user_image_quality():
         if not id_token:
             raise Exception("No authorization token provided")
         id_token = id_token.split(" ")[1]  # Extract token from Bearer
-        header = jwt.get_unverified_header(id_token)
+        header = jwt.get_unverified_headers(id_token)
         public_key = get_apple_public_key(header["kid"])
         decoded_token = jwt.decode(id_token, public_key, audience="com.jamesfeura.lucidjournal", algorithms=['RS256'])
 
@@ -335,7 +335,7 @@ def search_dreams_endpoint(args):
         if not id_token:
             raise Exception("No authorization token provided")
         id_token = id_token.split(" ")[1]  # Extract the token from the header
-        header = jwt.get_unverified_header(id_token)
+        header = jwt.get_unverified_headers(id_token)
         public_key = get_apple_public_key(header["kid"])
         decoded_token = jwt.decode(id_token, public_key, audience="com.jamesfeura.lucidjournal", algorithms=['RS256'])
 
@@ -368,7 +368,7 @@ def chat_endpoint(args):
         if not id_token:
             raise Exception("No authorization token provided")
         id_token = id_token.split(" ")[1]  # Extract the token from the header
-        header = jwt.get_unverified_header(id_token)
+        header = jwt.get_unverified_headers(id_token)
         public_key = get_apple_public_key(header["kid"])
         decoded_token = jwt.decode(id_token, public_key, audience="com.jamesfeura.lucidjournal", algorithms=['RS256'])
 
@@ -401,7 +401,7 @@ def search_chat_with_dreams_endpoint(args):
         if not id_token:
             raise Exception("No authorization token provided")
         id_token = id_token.split(" ")[1]  # Extract the token from the header
-        header = jwt.get_unverified_header(id_token)
+        header = jwt.get_unverified_headers(id_token)
         public_key = get_apple_public_key(header["kid"])
         decoded_token = jwt.decode(id_token, public_key, audience="com.jamesfeura.lucidjournal", algorithms=['RS256'])
 
