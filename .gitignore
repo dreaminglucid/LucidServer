@@ -39,5 +39,5 @@ logs/
 *.log
 
 # Other server related directories
-memory/
+# memory/
 # /config.ini
