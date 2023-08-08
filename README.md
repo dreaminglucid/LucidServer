@@ -3,7 +3,6 @@ The Lucid Journal backend server of the project is responsible for managing drea
 
 ![image](https://github.com/cp-james-harbeck/LucidJournalServer/assets/76927280/e368419b-d462-41df-9dbf-a39bbc7a7a27)
 
-
 ## Packages
 We utilize several agent-centric python packages from the [Autonomous Research Group](https://github.com/AutonomousResearchGroup).
 
