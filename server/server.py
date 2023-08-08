@@ -25,8 +25,9 @@ dream_args = {
     "title": fields.Str(required=True),
     "date": fields.Str(required=True),
     "entry": fields.Str(required=True),
-    "id_token": fields.Str(required=True),  # add this line
+    "id_token": fields.Str(required=True),
 }
+
 update_dream_args = {
     "analysis": fields.Str(),
     "image": fields.Str(),
@@ -426,4 +427,6 @@ def search_chat_with_dreams_endpoint(args):
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    import os
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
