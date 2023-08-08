@@ -20,6 +20,9 @@ config.read("config.ini")
 # Get the API key from the config file
 openai_api_key = config.get("openai", "api_key")
 
+# This dictionary will store the message history for each user
+message_histories = {}
+
 
 #  ANALYSIS AND IMAGE GENERATION FUNCTIONS
 def get_image_summary(dream_entry):
@@ -228,9 +231,21 @@ available_functions = [
     track_lucidity_progress_function,
 ]
 
-def regular_chat(message):
+def regular_chat(message, user_email):
+    global message_histories  # Access the global dictionary
+
     try:
         log(f"Generating GPT response for message: {message}", type="info")
+
+        # Retrieve the user's history, or initialize a new one if it does not exist yet
+        if user_email not in message_histories:
+            message_histories[user_email] = []
+            log(f"Initializing new message history for user: {user_email}", type="info")
+        else:
+            log(f"Retrieved existing message history for user: {user_email}", type="info")
+
+        all_messages = message_histories[user_email]
+
         # Provide a default prompt for lucid dreaming conversation
         if not message:
             message = "Let's talk about the fascinating world of lucid dreaming."
@@ -244,14 +259,14 @@ def regular_chat(message):
             """
         
         # Combine system_message and user message
-        combined_messages = [
-            {"role": "user", "content": initial_message},
+        all_messages += [
+            {"role": "system", "content": initial_message},
             {"role": "user", "content": message}
         ]
         
         response = chat_completion(
-            messages=combined_messages,
-            model='gpt-3.5-turbo',
+            messages=all_messages,
+            model='gpt-3.5-turbo-16k',
             api_key=openai_api_key
         )
 
@@ -261,6 +276,10 @@ def regular_chat(message):
             log(f"Error from GPT-4: {response['error']}", type="error", color="red")
 
         if "text" in response:
+            # Add the system's response to the message history
+            all_messages.append({"role": "system", "content": response["text"]})
+            log(f"Added system message: {response['text']}", type="info")
+
             return response["text"]
         else:
             log("Error: Unable to generate a response.", type="error", color="red")
@@ -316,20 +335,28 @@ def call_function_by_name(function_name, prompt, messages):
         functions=[function_to_call],
         function_call=function_to_call["name"],
         api_key=openai_api_key,
+        model='gpt-3.5-turbo-16k'  # Set the model to 'gpt-3.5-turbo-16k'
     )
 
     return response
 
 def search_chat_with_dreams(function_name, prompt, user_email, messages=None):
+    global message_histories  # Access the global dictionary
+
     try:
-        # Log the received prompt
         log(f"Received prompt: {prompt}", type="info")
 
         if messages is None:
             messages = []
 
-        all_messages = []  # Initialize all_messages list
-        log("Initialized all_messages list.", type="info")
+        # Retrieve the user's history, or initialize a new one if it does not exist yet
+        if user_email not in message_histories:
+            message_histories[user_email] = []
+            log(f"Initializing new message history for user: {user_email}", type="info")
+        else:
+            log(f"Retrieved existing message history for user: {user_email}", type="info")
+
+        all_messages = message_histories[user_email]
 
         # Count the tokens in the prompt
         prompt_tokens = count_tokens(prompt)

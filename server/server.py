@@ -374,7 +374,7 @@ def chat_endpoint(args):
         # Extract the user's email from the decoded token
         userEmail = decoded_token.get("email")
 
-        response = regular_chat(args["message"])
+        response = regular_chat(args["message"], userEmail)  # Pass userEmail as an argument
         log(f"Successfully retrieved chat response: {response}", type="info")
 
         return jsonify({"response": response})
