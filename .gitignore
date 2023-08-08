@@ -40,4 +40,4 @@ logs/
 
 # Other server related directories
 memory/
-/config.ini
+# /config.ini
