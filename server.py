@@ -77,9 +77,8 @@ def create_dream_endpoint(args):
 
         header = jwt.get_unverified_header(id_token)
         public_key = get_apple_public_key(header["kid"])
-        jwt_instance = JWT()
-        decoded_token = jwt_instance.decode(id_token, public_key, do_time_check=False)
-
+        decoded_token = jwt.decode(id_token, public_key, audience="com.jamesfeura.lucidjournal", algorithms=['RS256'])
+        
         # Extract the user's email from the decoded token
         userEmail = decoded_token.get("email")
         
