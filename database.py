@@ -1,7 +1,17 @@
 from agentlogger import log, print_header, write_to_file
+import os
 import time
-from agentmemory import create_memory, get_memories, update_memory, get_memory
+from agentmemory import create_memory, get_memories, update_memory, get_memory, PostgresClient
 from openai_utils import generate_dream_analysis, generate_dream_image, get_image_summary
+
+
+# Function to get PostgreSQL connection string from environment variables
+def get_postgres_connection_string():
+    return os.environ.get('POSTGRES_CONNECTION_STRING')
+
+# Initialize PostgresClient
+connection_string = get_postgres_connection_string()
+client = PostgresClient(connection_string)
 
 
 def create_dream(title, date, entry, userEmail):
