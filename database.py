@@ -1,8 +1,13 @@
 from agentlogger import log, print_header, write_to_file
-import os
 import time
 from agentmemory import create_memory, get_memories, update_memory, get_memory
 from openai_utils import generate_dream_analysis, generate_dream_image, get_image_summary
+
+import os
+
+CLIENT_TYPE = os.environ.get("CLIENT_TYPE")
+POSTGRES_CONNECTION_STRING = os.environ.get("POSTGRES_CONNECTION_STRING")
+
 
 def create_dream(title, date, entry, userEmail):
     dream = {"title": title, "date": date, "entry": entry, "userEmail": userEmail}
