@@ -16,4 +16,4 @@ build:
 
 # Run section for defining the processes to run
 run:
-  web: bundle exec puma -C config/puma.rb  # Web process command
+  web: gunicorn server:app  # Web process command using Gunicorn
