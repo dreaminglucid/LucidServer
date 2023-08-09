@@ -1,4 +1,4 @@
-# Use the specific Python runtime as a parent image
+# Use the specific Debian-based Python runtime as a parent image
 FROM python:3.11.4-slim-buster
 
 # Set the working directory inside the container
@@ -12,7 +12,17 @@ RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
     libpq-dev \
+    wget \
     && rm -rf /var/lib/apt/lists/*
+
+# Manually install SQLite3 >= 3.35.0
+RUN wget https://www.sqlite.org/2021/sqlite-autoconf-3350500.tar.gz \
+    && tar xvfz sqlite-autoconf-3350500.tar.gz \
+    && cd sqlite-autoconf-3350500 \
+    && ./configure \
+    && make \
+    && make install \
+    && ldconfig
 
 # Install Python dependencies from the requirements file
 RUN pip install --upgrade pip
