@@ -16,16 +16,16 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Download, compile, and install SQLite version 3.36.0
-RUN wget -v https://www.sqlite.org/2023/sqlite-autoconf-3360000.tar.gz && \
-    tar xvfz sqlite-autoconf-3360000.tar.gz && \
-    cd sqlite-autoconf-3360000 && \
+# Download, compile, and install SQLite from the provided snapshot
+RUN wget -v https://sqlite.org/snapshot/sqlite-snapshot-202308011103.tar.gz && \
+    tar xvfz sqlite-snapshot-202308011103.tar.gz && \
+    cd sqlite-snapshot-202308011103 && \
     ./configure && \
     make && make install && \
     ldconfig && \
     cd .. && \
-    rm -rf sqlite-autoconf-3360000 && \
-    rm sqlite-autoconf-3360000.tar.gz
+    rm -rf sqlite-snapshot-202308011103 && \
+    rm sqlite-snapshot-202308011103.tar.gz
 
 # Check SQLite version
 RUN sqlite3 --version
