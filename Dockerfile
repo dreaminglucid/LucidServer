@@ -37,8 +37,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Make ports available to the world outside this container
 EXPOSE 8000
 
-# Define environment variable for Gunicorn with only 1 worker
-ENV GUNICORN_CMD_ARGS="--bind=0.0.0.0:8000 --workers=1 --log-level=info"
-
-# Run app.py when the container launches
-CMD ["gunicorn", "server:app"]
+# Run app.py when the container launches, using the Heroku-provided PORT environment variable
+CMD gunicorn --bind 0.0.0.0:$PORT server:app
