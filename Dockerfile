@@ -7,26 +7,25 @@ WORKDIR /app
 # Copy the local code to the container
 COPY . /app
 
-# Install system dependencies for some Python packages like psycopg2, C++ compiler, and sqlite3
+# Install system dependencies for some Python packages like psycopg2, C++ compiler, wget, and build tools
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
     libpq-dev \
     wget \
-    tar \
+    build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Build SQLite3 from source
-RUN wget https://www.sqlite.org/2023/sqlite-autoconf-3360000.tar.gz \
-    && tar xvfz sqlite-autoconf-3360000.tar.gz \
-    && cd sqlite-autoconf-3360000 \
-    && ./configure \
-    && make \
-    && make install \
-    && ldconfig \
-    && cd .. \
-    && rm -rf sqlite-autoconf-3360000 \
-    && rm sqlite-autoconf-3360000.tar.gz
+# Download, compile, and install SQLite version 3.36.0
+RUN wget -v https://www.sqlite.org/2023/sqlite-autoconf-3360000.tar.gz && \
+    tar xvfz sqlite-autoconf-3360000.tar.gz && \
+    cd sqlite-autoconf-3360000 && \
+    ./configure && \
+    make && make install && \
+    ldconfig && \
+    cd .. && \
+    rm -rf sqlite-autoconf-3360000 && \
+    rm sqlite-autoconf-3360000.tar.gz
 
 # Check SQLite version
 RUN sqlite3 --version
