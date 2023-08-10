@@ -10,7 +10,6 @@ We utilize several agent-centric python packages from the [Autonomous Research G
 - https://github.com/AutonomousResearchGroup/easycompletion
 - https://github.com/AutonomousResearchGroup/agentlogger
 
-
 ### Setup
 To set up the Lucid Journal backend server, follow these steps:
 
