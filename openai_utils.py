@@ -3,6 +3,7 @@ import requests
 import json
 import configparser
 import random
+import traceback
 
 from easycompletion import (
     compose_function,
@@ -24,7 +25,7 @@ openai_api_key = config.get("openai", "api_key")
 message_histories = {}
 
 
-#  ANALYSIS AND IMAGE GENERATION FUNCTIONS
+# ANALYSIS AND IMAGE GENERATION FUNCTIONS
 def get_image_summary(dream_entry):
     try:
         log(f"Generating summary for dream entry: {dream_entry}", type="info")
@@ -83,31 +84,27 @@ def generate_dream_analysis(prompt, system_content):
 
 def generate_dream_image(dreams, dream_id, style="renaissance", quality="low"):
     try:
-        log(f"Generating image for dream id: {dream_id}", type="info")
+        log(f"Starting image generation for dream id: {dream_id}", type="info")
         dream = next((d for d in dreams if d["id"] == dream_id), None)
         if not dream:
+            log(f"Dream with id {dream_id} not found.", type="error")
             return None
 
         summary = get_image_summary(dream["metadata"]["entry"])
+        style_description_map = {
+            "renaissance": "A renaissance painting of",
+            "abstract": "An abstract representation of",
+            "modern": "A modern artwork of",
+        }
+        style_description = style_description_map.get(style, "A renaissance painting of") # default
 
-        # Adjust prompt based on style
-        if style == "renaissance":
-            style_description = "A renaissance painting of"
-        elif style == "abstract":
-            style_description = "An abstract representation of"
-        elif style == "modern":
-            style_description = "A modern artwork of"
-        else:
-            style_description = "A renaissance painting of"  # default
-            
         quality_resolution_map = {
             "low": "256x256",
             "medium": "512x512",
             "high": "1024x1024"
         }
         resolution = quality_resolution_map.get(quality, "256x256")
-        
-        # Log the image quality and resolution
+
         log(f"Using image quality: {quality} with resolution: {resolution}", type="info")
 
         prompt = f"{style_description} {summary}, high quality, lucid dream themed."
@@ -116,9 +113,9 @@ def generate_dream_image(dreams, dream_id, style="renaissance", quality="low"):
             "n": 1,
             "size": resolution,
         }
-        
-        # Log the generated prompt
+
         log(f"Generated prompt: {prompt}", type="info")
+        log(f"Sending request to image generation API with data: {data}", type="debug")
 
         headers = {
             "Content-Type": "application/json",
@@ -131,8 +128,9 @@ def generate_dream_image(dreams, dream_id, style="renaissance", quality="low"):
             headers=headers,
         )
 
+        log(f"Received response from image generation API: {response.json()}", type="debug")
+
         response_data = response.json()
-        log(f"Received response from OpenAI API: {response_data}", type="info")
 
         if "data" in response_data and len(response_data["data"]) > 0:
             image_data = response_data["data"][0]
@@ -146,8 +144,9 @@ def generate_dream_image(dreams, dream_id, style="renaissance", quality="low"):
             )
             return None
     except Exception as e:
-        log(f"Error generating dream-inspired image: {e}", type="error", color="red")
+        log(f"Exception in generate_dream_image: {traceback.format_exc()}", type="error")
         return None
+
 
 # SEARCH WITH CHAT FUNCTIONS
 discuss_emotions_function = compose_function(
