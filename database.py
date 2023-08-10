@@ -41,6 +41,7 @@ def get_dreams(userEmail):
         }
         for memory in memories if "userEmail" in memory["metadata"] and memory["metadata"]["userEmail"] == userEmail
     ]
+    log(f"Debug: Retrieved dreams for userEmail {userEmail}: {dreams}", type="info")
     return dreams
 
 
@@ -69,11 +70,12 @@ def get_dream_analysis(dream_id, max_retries=5):
 def get_dream_image(dream_id, style="renaissance", quality="low", max_retries=5):
     try:
         log(f"Fetching dream image for dream id {dream_id}.", type="info")
+        dream = get_dream(dream_id)
+        log(f"Debug: Retrieved dream object: {dream}", type="info")
         
         # Log the style being used
         log(f"Using image style: {style}", type="info")
 
-        dream = get_dream(dream_id)
         userEmail = dream["metadata"]["userEmail"]  # get userEmail from dream metadata
         dreams = get_dreams(userEmail)  # pass userEmail to get_dreams()
         summary = get_image_summary(dream["metadata"]["entry"])
