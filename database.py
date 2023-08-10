@@ -101,6 +101,9 @@ def update_dream_analysis_and_image(dream_id, analysis=None, image=None):
     if dream is None:
         log(f"Dream with id {dream_id} not found.", type="error", color="red")
         return None
+    if dream.get("metadata") is None:
+        log(f"Metadata for dream with id {dream_id} not found.", type="error", color="red")
+        return None
     if analysis:
         dream["metadata"]["analysis"] = analysis
     if image:
