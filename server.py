@@ -235,7 +235,7 @@ def get_dream_image_endpoint(dream_id):
 
         # Here, you'll retrieve the user's preferred style. For now, this is a placeholder:
         # In a real-world scenario, you would fetch this from the database or user settings.
-# Inside get_dream_image_endpoint
+        # Inside get_dream_image_endpoint
         userPreferredStyle = user_style_preferences.get(userEmail, "renaissance")
 
         # Fetch the user's preferred style and quality

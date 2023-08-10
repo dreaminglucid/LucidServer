@@ -1,4 +1,4 @@
-from agentlogger import log, print_header, write_to_file
+from agentlogger import log
 import requests
 import json
 import configparser
@@ -132,6 +132,7 @@ def generate_dream_image(dreams, dream_id, style="renaissance", quality="low"):
         )
 
         response_data = response.json()
+        log(f"Received response from OpenAI API: {response_data}", type="info")
 
         if "data" in response_data and len(response_data["data"]) > 0:
             image_data = response_data["data"][0]
