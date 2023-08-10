@@ -7,12 +7,13 @@ WORKDIR /app
 # Copy the local code to the container
 COPY . /app
 
-# Install system dependencies for some Python packages like psycopg2, C++ compiler, wget, and build tools
+# Install system dependencies for some Python packages like psycopg2, C++ compiler, wget, git, and build tools
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
     libpq-dev \
     wget \
+    git \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
