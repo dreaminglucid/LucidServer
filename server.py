@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 import jwt
 import requests
 import json
-from webargs import fields, validate
+from webargs import fields
 from webargs.flaskparser import use_args
 from database import (
     create_dream,
@@ -13,7 +13,7 @@ from database import (
     get_dream_image,
 )
 from openai_utils import search_dreams, search_chat_with_dreams, regular_chat
-from agentlogger import log, print_header, write_to_file
+from agentlogger import log, print_header
 import traceback
 
 

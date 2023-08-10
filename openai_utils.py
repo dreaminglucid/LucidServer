@@ -83,8 +83,10 @@ def generate_dream_analysis(prompt, system_content):
 
 def generate_dream_image(dreams, dream_id, style="renaissance", quality="low"):
     try:
+        dream_id = int(dream_id)  # Convert dream_id to integer
+        log(f"Debug: dream_id type: {type(dream_id)}, value: {dream_id}", type="info")
         log(f"Starting image generation for dream id: {dream_id}, style: {style}, quality: {quality}", type="info")
-        dream = next((d for d in dreams if d["id"] == dream_id), None)
+        dream = next((d for d in dreams if int(d["id"]) == dream_id), None)  # Compare as integers
         
         if not dream:
             log(f"Dream with id {dream_id} not found in the provided dreams list.", type="warning")
