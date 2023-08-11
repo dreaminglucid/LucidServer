@@ -4,8 +4,8 @@ from agentmemory import create_memory, get_memories, update_memory, get_memory
 from openai_utils import generate_dream_analysis, generate_dream_image, get_image_summary
 
 
-def create_dream(title, date, entry, userEmail):
-    dream = {"title": title, "date": date, "entry": entry, "useremail": userEmail}
+def create_dream(title, date, entry, useremail):
+    dream = {"title": title, "date": date, "entry": entry, "useremail": useremail}
     memory_id = create_memory("dreams", f"{title}\n{entry}", metadata=dream)
     log("Dream created successfully.", type="info")
     dream["id"] = memory_id
@@ -45,7 +45,7 @@ def get_dream(dream_id):
     return dream_data
 
 
-def get_dreams(userEmail):
+def get_dreams(useremail):
     log("Fetching all dreams.", type="info")
     memories = get_memories("dreams", n_results=2222)
     dreams = [
@@ -60,9 +60,9 @@ def get_dreams(userEmail):
             "created_at": memory.get("created_at"),
             "updated_at": memory.get("updated_at"),
         }
-        for memory in memories if memory.get("useremail") == userEmail
+        for memory in memories if memory.get("useremail") == useremail
     ]
-    log(f"Debug: Retrieved dreams for userEmail {userEmail}: {dreams}", type="info")
+    log(f"Debug: Retrieved dreams for userEmail {useremail}: {dreams}", type="info")
     return dreams
 
 
