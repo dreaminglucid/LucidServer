@@ -282,8 +282,8 @@ def update_image_style():
     except Exception as e:
         log(f"Unhandled exception occurred: {traceback.format_exc()}", type="error")
         return jsonify({"status": "error", "message": str(e)}), 500
-
-
+    
+    
 @app.route("/api/user/image-quality", methods=["POST"])
 def set_user_image_quality():
     try:
