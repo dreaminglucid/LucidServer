@@ -275,7 +275,7 @@ def update_image_style():
 
         # Update the user's image style preference
         style = request.json.get("style")
-        user_style_preferences[userEmail] = style
+        user_style_preferences[userEmail] = {"style": style}  # Store as a dictionary
 
         return jsonify({"status": "success", "message": "Image style updated!"})
 
