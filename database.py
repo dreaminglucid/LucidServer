@@ -40,9 +40,9 @@ def get_dream(dream_id):
 
     # Optionally, extract analysis and image from metadata if present
     if "analysis" in dream["metadata"]:
-        dream_data["metadata"]["analysis"] = dream["metadata"]["analysis"]
+        dream_data["analysis"] = dream["metadata"]["analysis"]
     if "image" in dream["metadata"]:
-        dream_data["metadata"]["image"] = dream["metadata"]["image"]
+        dream_data["image"] = dream["metadata"]["image"]
 
     log(f"Successfully retrieved dream with id {dream_id}: {dream_data}", type="info")
     return dream_data
