@@ -5,17 +5,16 @@ from openai_utils import generate_dream_analysis, generate_dream_image, get_imag
 
 
 def create_dream(title, date, entry, userEmail):
-    dream_data = {
+    metadata = {
         "title": title,
         "date": date,
         "entry": entry,
         "useremail": userEmail, # Note the lowercase 'e'
     }
     document = f"{title}\n{entry}"
-    memory_id = create_memory("dreams", document, metadata=dream_data)
-    log("Dream created successfully.", type="info")
-    dream_data["id"] = memory_id
-    return dream_data
+    memory_id = create_memory("dreams", document, metadata=metadata)
+    dream = get_memory("dreams", memory_id)
+    return dream
 
 
 def get_dream(dream_id):
@@ -31,17 +30,13 @@ def get_dream(dream_id):
     dream_data = {
         "id": dream["id"],
         "document": dream["document"],
-        "title": dream["metadata"]["title"],
-        "date": dream["metadata"]["date"],
-        "entry": dream["metadata"]["entry"],
-        "useremail": dream["metadata"]["useremail"],
+        "metadata": {
+            "title": dream["metadata"]["title"],
+            "date": dream["metadata"]["date"],
+            "entry": dream["metadata"]["entry"],
+            "useremail": dream["metadata"]["useremail"],
+        }
     }
-
-    # Optionally, extract analysis and image from metadata if present
-    if "analysis" in dream["metadata"]:
-        dream_data["analysis"] = dream["metadata"]["analysis"]
-    if "image" in dream["metadata"]:
-        dream_data["image"] = dream["metadata"]["image"]
 
     log(f"Successfully retrieved dream with id {dream_id}: {dream_data}", type="info")
     return dream_data
@@ -54,10 +49,12 @@ def get_dreams(userEmail):
         {
             "id": memory["id"],
             "document": memory["document"],
-            "title": memory["metadata"]["title"],
-            "date": memory["metadata"]["date"],
-            "entry": memory["metadata"]["entry"],
-            "useremail": memory["metadata"]["useremail"],
+            "metadata": {
+                "title": memory["metadata"]["title"],
+                "date": memory["metadata"]["date"],
+                "entry": memory["metadata"]["entry"],
+                "useremail": memory["metadata"]["useremail"],
+            }
         }
         for memory in memories if "useremail" in memory["metadata"] and memory["metadata"]["useremail"] == userEmail
     ]
