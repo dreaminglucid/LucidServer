@@ -3,6 +3,7 @@ import time
 from agentmemory import create_memory, get_memories, update_memory, get_memory
 from openai_utils import generate_dream_analysis, generate_dream_image, get_image_summary
 
+
 def create_dream(title, date, entry, userEmail):
     dream = {"title": title, "date": date, "entry": entry, "userEmail": userEmail}
     memory_id = create_memory("dreams", f"{title}\n{entry}", metadata=dream)
@@ -12,22 +13,32 @@ def create_dream(title, date, entry, userEmail):
 
 
 def get_dream(dream_id):
-    log(f"Fetching dream with id {dream_id}.", type="info")
+    log(f"Initiating retrieval of dream with id {dream_id}.", type="info")
+
+    # Fetching the dream
     dream = get_memory("dreams", dream_id)
-    if dream is not None:
-        dream_data = {
-            "id": dream["id"],
-            "document": dream["document"],
-            "metadata": dream["metadata"],
-        }
-        if "analysis" in dream["metadata"]:
-            dream_data["analysis"] = dream["metadata"]["analysis"]
-        if "image" in dream["metadata"]:
-            dream_data["image"] = dream["metadata"]["image"]
-        return dream_data
-    else:
+    if dream is None:
         log(f"Dream with id {dream_id} not found.", type="error", color="red")
         return None
+
+    # Constructing the dream data
+    dream_data = {
+        "id": dream["id"],
+        "title": dream["title"],
+        "date": dream["date"],
+        "entry": dream["entry"],
+        "useremail": dream["useremail"],
+        # Include other fields if needed
+    }
+
+    # Optionally, extract analysis and image if present
+    if "analysis" in dream:
+        dream_data["analysis"] = dream["analysis"]
+    if "image" in dream:
+        dream_data["image"] = dream["image"]
+
+    log(f"Successfully retrieved dream with id {dream_id}: {dream_data}", type="info")
+    return dream_data
 
 
 def get_dreams(userEmail):
@@ -36,10 +47,13 @@ def get_dreams(userEmail):
     dreams = [
         {
             "id": memory["id"],
-            "document": memory["document"],
-            "metadata": memory["metadata"],
+            "title": memory["title"],
+            "date": memory["date"],
+            "entry": memory["entry"],
+            "useremail": memory["useremail"],
+            # Include other fields if needed
         }
-        for memory in memories if "userEmail" in memory["metadata"] and memory["metadata"]["userEmail"] == userEmail
+        for memory in memories if memory["useremail"] == userEmail
     ]
     log(f"Debug: Retrieved dreams for userEmail {userEmail}: {dreams}", type="info")
     return dreams
