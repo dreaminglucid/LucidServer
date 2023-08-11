@@ -4,9 +4,10 @@ from agentmemory import create_memory, get_memories, update_memory, get_memory
 from openai_utils import generate_dream_analysis, generate_dream_image, get_image_summary
 
 
-def create_dream(title, date, entry, useremail):
-    dream = {"title": title, "date": date, "entry": entry, "useremail": useremail}
-    memory_id = create_memory("dreams", f"{title}\n{entry}", metadata=dream)
+def create_dream(title, date, entry, userEmail):
+    metadata = {"title": title, "date": date, "userEmail": userEmail}  # Define metadata separately
+    dream = {"document": f"{title}\n{entry}", "metadata": metadata}  # Nest metadata under "metadata" key
+    memory_id = create_memory("dreams", dream)  # Pass the entire dream object, including metadata
     log("Dream created successfully.", type="info")
     dream["id"] = memory_id
     return dream
@@ -45,24 +46,18 @@ def get_dream(dream_id):
     return dream_data
 
 
-def get_dreams(useremail):
+def get_dreams(userEmail):
     log("Fetching all dreams.", type="info")
     memories = get_memories("dreams", n_results=2222)
     dreams = [
         {
             "id": memory["id"],
             "document": memory["document"],
-            "title": memory.get("title"),
-            "date": memory.get("date"),
-            "entry": memory.get("entry"),
-            "embedding": memory.get("embedding"),
-            "useremail": memory.get("useremail"),
-            "created_at": memory.get("created_at"),
-            "updated_at": memory.get("updated_at"),
+            "metadata": memory["metadata"],
         }
-        for memory in memories if memory.get("useremail") == useremail
+        for memory in memories if "userEmail" in memory["metadata"] and memory["metadata"]["userEmail"] == userEmail
     ]
-    log(f"Debug: Retrieved dreams for userEmail {useremail}: {dreams}", type="info")
+    log(f"Debug: Retrieved dreams for userEmail {userEmail}: {dreams}", type="info")
     return dreams
 
 
