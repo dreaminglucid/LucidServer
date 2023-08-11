@@ -233,11 +233,6 @@ def get_dream_image_endpoint(dream_id):
 
         log(f"Received GET request at /api/dreams/{dream_id}/image", type="info")
 
-        # Here, you'll retrieve the user's preferred style. For now, this is a placeholder:
-        # In a real-world scenario, you would fetch this from the database or user settings.
-        # Inside get_dream_image_endpoint
-        userPreferredStyle = user_style_preferences.get(userEmail, "renaissance")
-
         # Fetch the user's preferred style and quality
         userPreferredStyle = user_style_preferences.get(userEmail, {}).get("style", "renaissance")
         userPreferredQuality = user_style_preferences.get(userEmail, {}).get("quality", "low")
@@ -275,7 +270,9 @@ def update_image_style():
 
         # Update the user's image style preference
         style = request.json.get("style")
-        user_style_preferences[userEmail] = {"style": style}  # Store as a dictionary
+        if userEmail not in user_style_preferences:
+            user_style_preferences[userEmail] = {}
+        user_style_preferences[userEmail]["style"] = style
 
         return jsonify({"status": "success", "message": "Image style updated!"})
 
