@@ -51,19 +51,27 @@ def get_dream(dream_id):
 def get_dreams(userEmail):
     log("Fetching all dreams.", type="info")
     memories = get_memories("dreams", n_results=2222)
-    dreams = [
-        {
-            "id": memory["id"],
-            "document": memory["document"],
-            "metadata": {
-                "title": memory["metadata"]["title"],
-                "date": memory["metadata"]["date"],
-                "entry": memory["metadata"]["entry"],
-                "useremail": memory["metadata"]["useremail"],
+    dreams = []
+    for memory in memories:
+        if "useremail" in memory["metadata"] and memory["metadata"]["useremail"] == userEmail:
+            dream_data = {
+                "id": memory["id"],
+                "document": memory["document"],
+                "metadata": {
+                    "title": memory["metadata"]["title"],
+                    "date": memory["metadata"]["date"],
+                    "entry": memory["metadata"]["entry"],
+                    "useremail": memory["metadata"]["useremail"],
+                }
             }
-        }
-        for memory in memories if "useremail" in memory["metadata"] and memory["metadata"]["useremail"] == userEmail
-    ]
+            # Optionally, extract analysis and image from metadata if present
+            if "analysis" in memory["metadata"]:
+                dream_data["analysis"] = memory["metadata"]["analysis"]
+            if "image" in memory["metadata"]:
+                dream_data["image"] = memory["metadata"]["image"]
+
+            dreams.append(dream_data)
+
     log(f"Debug: Retrieved dreams for userEmail {userEmail}: {dreams}", type="info")
     return dreams
 
