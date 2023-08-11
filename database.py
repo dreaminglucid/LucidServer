@@ -12,36 +12,22 @@ def create_dream(title, date, entry, userEmail):
 
 
 def get_dream(dream_id):
-    log(f"Initiating retrieval of dream with id {dream_id}.", type="info")
-
-    # Fetching the dream
+    log(f"Fetching dream with id {dream_id}.", type="info")
     dream = get_memory("dreams", dream_id)
-    if dream is None:
+    if dream is not None:
+        dream_data = {
+            "id": dream["id"],
+            "document": dream["document"],
+            "metadata": dream["metadata"],
+        }
+        if "analysis" in dream["metadata"]:
+            dream_data["analysis"] = dream["metadata"]["analysis"]
+        if "image" in dream["metadata"]:
+            dream_data["image"] = dream["metadata"]["image"]
+        return dream_data
+    else:
         log(f"Dream with id {dream_id} not found.", type="error", color="red")
         return None
-
-    # Extracting the document and metadata
-    document = dream.get("document")
-    metadata = dream.get("metadata")
-    if document is None or metadata is None:
-        log(f"Document or metadata for dream with id {dream_id} not found.", type="error", color="red")
-        return None
-
-    # Constructing the dream data
-    dream_data = {
-        "id": dream["id"],
-        "document": document,
-        "metadata": metadata,
-    }
-
-    # Optionally, extract analysis and image from metadata if present
-    if "analysis" in metadata:
-        dream_data["analysis"] = metadata["analysis"]
-    if "image" in metadata:
-        dream_data["image"] = metadata["image"]
-
-    log(f"Successfully retrieved dream with id {dream_id}: {dream_data}", type="info")
-    return dream_data
 
 
 def get_dreams(userEmail):
