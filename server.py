@@ -193,7 +193,7 @@ def get_dream_analysis_endpoint(dream_id):
 
         # Get the dream
         dream = get_dream(dream_id)
-        if dream is None or dream["useremail"] != userEmail:  # Fixed line
+        if dream is None or dream["metadata"]["userEmail"] != userEmail:
             raise ValueError(f"Dream with id {dream_id} not found.")
         
         log(f"Received GET request at /api/dreams/{dream_id}/analysis", type="info")
@@ -228,7 +228,7 @@ def get_dream_image_endpoint(dream_id):
 
         # Get the dream
         dream = get_dream(dream_id)
-        if dream is None or dream["useremail"] != userEmail:  # Fixed line
+        if dream is None or dream["metadata"]["userEmail"] != userEmail:
             raise ValueError(f"Dream with id {dream_id} not found.")
 
         log(f"Received GET request at /api/dreams/{dream_id}/image", type="info")
@@ -237,6 +237,9 @@ def get_dream_image_endpoint(dream_id):
         # In a real-world scenario, you would fetch this from the database or user settings.
         # Inside get_dream_image_endpoint
         userPreferredStyle = user_style_preferences.get(userEmail, "renaissance")
+
+        # Fetch the user's preferred style and quality
+        userPreferredStyle = user_style_preferences.get(userEmail, {}).get("style", "renaissance")
         userPreferredQuality = user_style_preferences.get(userEmail, {}).get("quality", "low")
 
         image = get_dream_image(dream_id, userPreferredStyle, userPreferredQuality)
