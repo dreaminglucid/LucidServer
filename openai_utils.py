@@ -313,7 +313,7 @@ def search_dreams(keyword, user_email):
             },
         }
         for memory in search_results
-        if memory['metadata']['userEmail'] == user_email  # filter results by user email
+        if memory['metadata']['useremail'] == user_email  # filter results by user email, using lowercase 'useremail'
     ]
     return dreams
 
