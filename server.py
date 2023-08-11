@@ -275,15 +275,15 @@ def update_image_style():
 
         # Update the user's image style preference
         style = request.json.get("style")
-        user_style_preferences[userEmail] = style
+        user_style_preferences[userEmail] = {"style": style}  # Store as a dictionary
 
         return jsonify({"status": "success", "message": "Image style updated!"})
 
     except Exception as e:
         log(f"Unhandled exception occurred: {traceback.format_exc()}", type="error")
         return jsonify({"status": "error", "message": str(e)}), 500
-    
-    
+
+
 @app.route("/api/user/image-quality", methods=["POST"])
 def set_user_image_quality():
     try:
