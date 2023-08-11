@@ -5,7 +5,7 @@ from openai_utils import generate_dream_analysis, generate_dream_image, get_imag
 
 
 def create_dream(title, date, entry, userEmail):
-    dream = {"title": title, "date": date, "entry": entry, "userEmail": userEmail}
+    dream = {"title": title, "date": date, "entry": entry, "useremail": userEmail}
     memory_id = create_memory("dreams", f"{title}\n{entry}", metadata=dream)
     log("Dream created successfully.", type="info")
     dream["id"] = memory_id
