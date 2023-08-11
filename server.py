@@ -275,9 +275,7 @@ def update_image_style():
 
         # Update the user's image style preference
         style = request.json.get("style")
-        if userEmail not in user_style_preferences or type(user_style_preferences[userEmail]) is not dict:
-            user_style_preferences[userEmail] = {}
-        user_style_preferences[userEmail]["style"] = style  # Store the style inside a dictionary for the user
+        user_style_preferences[userEmail] = style
 
         return jsonify({"status": "success", "message": "Image style updated!"})
 
