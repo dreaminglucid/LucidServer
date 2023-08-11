@@ -93,7 +93,7 @@ def get_dream_image(dream_id, style="renaissance", quality="low", max_retries=5)
         # Log the style being used
         log(f"Using image style: {style}", type="info")
 
-        userEmail = dream["metadata"]["userEmail"]  # get userEmail from dream metadata
+        userEmail = dream["metadata"]["useremail"]  # get useremail from dream metadata, updated line
         dreams = get_dreams(userEmail)  # pass userEmail to get_dreams()
         summary = get_image_summary(dream["metadata"]["entry"])
         for _ in range(max_retries):
