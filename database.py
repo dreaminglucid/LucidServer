@@ -97,17 +97,26 @@ def get_dream_image(dream_id, style="renaissance", quality="low", max_retries=5)
 
 def update_dream_analysis_and_image(dream_id, analysis=None, image=None):
     log(f"Updating dream analysis and image for dream id {dream_id}.", type="info")
+    
+    # Retrieve the existing dream
     dream = get_dream(dream_id)
     if dream is None:
         log(f"Dream with id {dream_id} not found.", type="error", color="red")
         return None
+
+    # Ensure that metadata exists
     if dream.get("metadata") is None:
         log(f"Metadata for dream with id {dream_id} not found.", type="error", color="red")
         return None
+
+    # Update the analysis and image in the metadata if provided
     if analysis:
         dream["metadata"]["analysis"] = analysis
     if image:
         dream["metadata"]["image"] = image
+    
+    # Update the memory with the modified metadata
     update_memory("dreams", dream_id, metadata=dream["metadata"])
+
     log("Dream analysis and image updated successfully.", type="info")
     return dream
