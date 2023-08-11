@@ -5,9 +5,8 @@ from openai_utils import generate_dream_analysis, generate_dream_image, get_imag
 
 
 def create_dream(title, date, entry, userEmail):
-    metadata = {"title": title, "date": date, "userEmail": userEmail}  # Define metadata separately
-    dream = {"document": f"{title}\n{entry}", "metadata": metadata}  # Nest metadata under "metadata" key
-    memory_id = create_memory("dreams", dream)  # Pass the entire dream object, including metadata
+    dream = {"title": title, "date": date, "entry": entry, "userEmail": userEmail}
+    memory_id = create_memory("dreams", f"{title}\n{entry}", metadata=dream)
     log("Dream created successfully.", type="info")
     dream["id"] = memory_id
     return dream
