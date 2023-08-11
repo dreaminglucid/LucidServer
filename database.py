@@ -21,21 +21,25 @@ def get_dream(dream_id):
         log(f"Dream with id {dream_id} not found.", type="error", color="red")
         return None
 
+    # Extracting the document and metadata
+    document = dream.get("document")
+    metadata = dream.get("metadata")
+    if document is None or metadata is None:
+        log(f"Document or metadata for dream with id {dream_id} not found.", type="error", color="red")
+        return None
+
     # Constructing the dream data
     dream_data = {
         "id": dream["id"],
-        "title": dream["title"],
-        "date": dream["date"],
-        "entry": dream["entry"],
-        "useremail": dream["useremail"],
-        # Include other fields if needed
+        "document": document,
+        "metadata": metadata,
     }
 
-    # Optionally, extract analysis and image if present
-    if "analysis" in dream:
-        dream_data["analysis"] = dream["analysis"]
-    if "image" in dream:
-        dream_data["image"] = dream["image"]
+    # Optionally, extract analysis and image from metadata if present
+    if "analysis" in metadata:
+        dream_data["analysis"] = metadata["analysis"]
+    if "image" in metadata:
+        dream_data["image"] = metadata["image"]
 
     log(f"Successfully retrieved dream with id {dream_id}: {dream_data}", type="info")
     return dream_data
@@ -47,13 +51,10 @@ def get_dreams(userEmail):
     dreams = [
         {
             "id": memory["id"],
-            "title": memory["title"],
-            "date": memory["date"],
-            "entry": memory["entry"],
-            "userEmail": memory["userEmail"],
-            # Include other fields if needed
+            "document": memory["document"],
+            "metadata": memory["metadata"],
         }
-        for memory in memories if memory["userEmail"] == userEmail
+        for memory in memories if "userEmail" in memory["metadata"] and memory["metadata"]["userEmail"] == userEmail
     ]
     log(f"Debug: Retrieved dreams for userEmail {userEmail}: {dreams}", type="info")
     return dreams
