@@ -50,10 +50,10 @@ def get_dreams(userEmail):
             "title": memory["title"],
             "date": memory["date"],
             "entry": memory["entry"],
-            "useremail": memory["useremail"],
+            "userEmail": memory["userEmail"],
             # Include other fields if needed
         }
-        for memory in memories if memory["useremail"] == userEmail
+        for memory in memories if memory["userEmail"] == userEmail
     ]
     log(f"Debug: Retrieved dreams for userEmail {userEmail}: {dreams}", type="info")
     return dreams
