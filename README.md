@@ -63,7 +63,6 @@ python server.py
 
 By default, the API will run on `http://127.0.0.1:5000/`, and you can make requests to the API using tools like Postman or integrate it into your own applications.
 
-
 ## Heroku Deploy
 
 ### Constraints
