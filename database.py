@@ -37,6 +37,12 @@ def get_dream(dream_id):
         "useremail": dream["metadata"]["useremail"],
     }
 
+    # Optionally, extract analysis and image from metadata if present
+    if "analysis" in dream["metadata"]:
+        dream_data["analysis"] = dream["metadata"]["analysis"]
+    if "image" in dream["metadata"]:
+        dream_data["image"] = dream["metadata"]["image"]
+
     log(f"Successfully retrieved dream with id {dream_id}: {dream_data}", type="info")
     return dream_data
 
