@@ -193,7 +193,7 @@ def get_dream_analysis_endpoint(dream_id):
 
         # Get the dream
         dream = get_dream(dream_id)
-        if dream is None or dream["metadata"]["userEmail"] != userEmail:
+        if dream is None or dream["metadata"]["useremail"] != userEmail:
             raise ValueError(f"Dream with id {dream_id} not found.")
         
         log(f"Received GET request at /api/dreams/{dream_id}/analysis", type="info")
@@ -228,7 +228,7 @@ def get_dream_image_endpoint(dream_id):
 
         # Get the dream
         dream = get_dream(dream_id)
-        if dream is None or dream["metadata"]["userEmail"] != userEmail:
+        if dream is None or dream["metadata"]["useremail"] != userEmail:
             raise ValueError(f"Dream with id {dream_id} not found.")
 
         log(f"Received GET request at /api/dreams/{dream_id}/image", type="info")
