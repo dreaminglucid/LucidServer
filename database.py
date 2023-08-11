@@ -52,9 +52,15 @@ def get_dreams(userEmail):
         {
             "id": memory["id"],
             "document": memory["document"],
-            "metadata": memory["metadata"],
+            "title": memory.get("title"),
+            "date": memory.get("date"),
+            "entry": memory.get("entry"),
+            "embedding": memory.get("embedding"),
+            "useremail": memory.get("useremail"),
+            "created_at": memory.get("created_at"),
+            "updated_at": memory.get("updated_at"),
         }
-        for memory in memories if "userEmail" in memory["metadata"] and memory["metadata"]["userEmail"] == userEmail
+        for memory in memories if memory.get("useremail") == userEmail
     ]
     log(f"Debug: Retrieved dreams for userEmail {userEmail}: {dreams}", type="info")
     return dreams
