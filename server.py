@@ -163,7 +163,7 @@ def get_dream_endpoint(dream_id):
         if dream is None:
             log(f"Dream with id {dream_id} not found.", type="error")
             return jsonify({"error": f"Dream with id {dream_id} not found."}), 404
-        if dream["useremail"] != userEmail:
+        if dream["metadata"]["useremail"] != userEmail:
             log(f"Unauthorized access attempt to dream with id {dream_id} by user {userEmail}.", type="error")
             return jsonify({"error": "Unauthorized access."}), 401
         log(f"Successfully fetched dream with id {dream_id}", type="info")
