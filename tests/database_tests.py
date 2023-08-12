@@ -3,8 +3,10 @@ sys.path.append('.')
 
 import pytest
 from database import create_dream, get_dream, get_dreams, get_dream_analysis, get_dream_image, update_dream_analysis_and_image
+from openai_utils import search_dreams
 
-# Mocking the create_memory function
+
+# Mocking the create_memory function //////////////////////////////////////////////////////////////////////////////////////////////////////
 def mock_create_memory(category, document, metadata=None):
     return "memory_id_12345"
 
@@ -47,8 +49,9 @@ def test_create_dream(monkeypatch):
     assert result['metadata']['useremail'] == user_email
     assert 'created_at' in result['metadata']
     assert 'updated_at' in result['metadata']
+   
     
-# Testing the get_dream function when the dream exists
+# Testing the get_dream function when the dream exists ////////////////////////////////////////////////////////////////////////////////////////////
 def test_get_dream_existing(monkeypatch):
     # Patching the get_memory function with mock function
     monkeypatch.setattr('database.get_memory', mock_get_memory)
@@ -108,7 +111,8 @@ def test_get_dream_with_optional_fields(monkeypatch):
     assert result['analysis'] == "Some analysis", f"Expected analysis field, but got {result}"
     assert result['image'] == "image.png", f"Expected image field, but got {result}"
 
-# Mocking the get_memories function
+
+# Mocking the get_memories function ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 def mock_get_memories(category, n_results=None):
     return [
         {
@@ -185,7 +189,8 @@ def mock_get_dream(dream_id):
         }
     }
 
-# Mocking the generate_dream_analysis function
+
+# Mocking the generate_dream_analysis function ///////////////////////////////////////////////////////////////////////////////////////////////////
 def mock_generate_dream_analysis(entry, prefix):
     return f"Analysis of: {entry}"
 
@@ -218,7 +223,8 @@ def test_get_dream_analysis_non_existing(monkeypatch):
     # Asserting that the result is None
     assert result is None, "Expected None, but got a result."
 
-# Mocking the get_dreams function
+
+# Mocking the get_dreams function /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 def mock_get_dreams(userEmail):
     return [mock_get_dream("memory_id_12345")]
 
@@ -266,7 +272,8 @@ def test_get_dream_image_failure(monkeypatch):
     # Asserting that the result is None (failure case)
     assert result is None, "Expected None, but got a result."
 
-# Mocking the update_memory function
+
+# Mocking the update_memory function ///////////////////////////////////////////////////////////////////////////////////////////////////////
 def mock_update_memory(category, memory_id, metadata=None):
     pass
 
@@ -338,3 +345,89 @@ def test_update_dream_analysis_and_image_exception(monkeypatch):
 
     # Asserting that the result is None (failure case)
     assert result is None, "Expected None, but got a result."
+
+
+# Mocking the search_dreams function /////////////////////////////////////////////////////////////////////////////////////////////////////////
+def mock_search_memory(category, keyword, n_results=100):
+    if keyword == "NonExisting":
+        return []
+    return [
+        {
+            "id": "memory_id_12345",
+            "document": "Dream Title\nDream Entry",
+            "metadata": {
+                "title": "Dream Title",
+                "date": "2022-08-07",
+                "entry": "Dream Entry",
+                "useremail": "user@example.com",
+                "analysis": "Some analysis",
+            }
+        },
+        {
+            "id": "memory_id_67890",
+            "document": "Another Dream Title\nAnother Dream Entry",
+            "metadata": {
+                "title": "Another Dream Title",
+                "date": "2022-08-08",
+                "entry": "Another Dream Entry",
+                "useremail": "another@example.com",
+            }
+        },
+    ]
+
+# Testing the search_dreams function when there are matching dreams for the given user
+def test_search_dreams_existing(monkeypatch):
+    # Patching the search_memory function with mock function
+    monkeypatch.setattr('openai_utils.search_memory', mock_search_memory)
+
+    # Test inputs
+    keyword = "Dream"
+    user_email = "user@example.com"
+
+    # Calling the search_dreams function
+    result = search_dreams(keyword, user_email)
+
+    # Asserting the properties of the result
+    assert len(result) == 1, "Expected one matching dream for the given email."
+    assert result[0]['id'] == "memory_id_12345"
+    assert result[0]['document'] == "Dream Title\nDream Entry"
+    assert result[0]['metadata']['title'] == "Dream Title"
+    assert result[0]['metadata']['date'] == "2022-08-07"
+    assert result[0]['metadata']['entry'] == "Dream Entry"
+    assert result[0]['metadata']['analysis'] == "Some analysis"
+
+# Testing the search_dreams function when no matching dreams exist for the given user
+def test_search_dreams_non_existing(monkeypatch):
+    # Patching the search_memory function with mock function
+    monkeypatch.setattr('openai_utils.search_memory', mock_search_memory)
+
+    # Test inputs
+    keyword = "NonExisting"
+    user_email = "user@example.com"
+
+    # Calling the search_dreams function
+    result = search_dreams(keyword, user_email)
+
+    # Asserting that the result is empty
+    assert result == [], "Expected an empty list, but got a result."
+
+# Testing the search_dreams function with multiple dreams but filtering by user email
+def test_search_dreams_filter_by_email(monkeypatch):
+    # Patching the search_memory function with mock function
+    monkeypatch.setattr('openai_utils.search_memory', mock_search_memory)
+
+    # Test inputs
+    keyword = "Dream"
+    user_email = "another@example.com"
+
+    # Calling the search_dreams function
+    result = search_dreams(keyword, user_email)
+
+    # Asserting that the result includes the dream for the given email
+    assert len(result) == 1, "Expected one matching dream for the given email."
+    assert result[0]['id'] == "memory_id_67890"
+    assert result[0]['document'] == "Another Dream Title\nAnother Dream Entry"
+    assert result[0]['metadata']['title'] == "Another Dream Title"
+    assert result[0]['metadata']['date'] == "2022-08-08"
+    assert result[0]['metadata']['entry'] == "Another Dream Entry"
+    assert 'analysis' not in result[0]['metadata'], "Did not expect analysis field, but got one."
