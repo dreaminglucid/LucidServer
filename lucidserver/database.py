@@ -1,10 +1,20 @@
-from agentlogger import log, print_header, write_to_file
 import time
+from agentlogger import log
 from agentmemory import create_memory, get_memories, update_memory, get_memory
 from openai_utils import generate_dream_analysis, generate_dream_image, get_image_summary
 
-
 def create_dream(title, date, entry, userEmail):
+    """Create a new dream in the memory.
+    
+    Args:
+        title (str): Title of the dream.
+        date (str): Date of the dream.
+        entry (str): Dream's description or content.
+        userEmail (str): Email of the user.
+
+    Returns:
+        dict: Newly created dream object.
+    """
     metadata = {
         "title": title,
         "date": date,
@@ -18,6 +28,14 @@ def create_dream(title, date, entry, userEmail):
 
 
 def get_dream(dream_id):
+    """Retrieve a specific dream by ID.
+
+    Args:
+        dream_id (str): ID of the dream to retrieve.
+
+    Returns:
+        dict: Retrieved dream object or None if not found.
+    """
     log(f"Initiating retrieval of dream with id {dream_id}.", type="info")
 
     # Fetching the dream
@@ -49,6 +67,14 @@ def get_dream(dream_id):
 
 
 def get_dreams(userEmail):
+    """Retrieve all dreams for a specific user.
+
+    Args:
+        userEmail (str): Email of the user.
+
+    Returns:
+        list: List of dreams for the user.
+    """
     log("Fetching all dreams.", type="info")
     memories = get_memories("dreams", n_results=2222)
     dreams = []
@@ -77,6 +103,15 @@ def get_dreams(userEmail):
 
 
 def get_dream_analysis(dream_id, max_retries=5):
+    """Fetch analysis for a dream.
+
+    Args:
+        dream_id (str): ID of the dream.
+        max_retries (int, optional): Maximum number of retries. Defaults to 5.
+
+    Returns:
+        str: Dream analysis or None if not found.
+    """
     try:
         log(f"Fetching dream analysis for dream id {dream_id}.", type="info")
         dream = get_dream(dream_id)
@@ -99,11 +134,22 @@ def get_dream_analysis(dream_id, max_retries=5):
 
 
 def get_dream_image(dream_id, style="renaissance", quality="low", max_retries=5):
+    """Fetch an image for a dream.
+
+    Args:
+        dream_id (str): ID of the dream.
+        style (str, optional): Style for the image. Defaults to "renaissance".
+        quality (str, optional): Quality of the image. Defaults to "low".
+        max_retries (int, optional): Maximum number of retries. Defaults to 5.
+
+    Returns:
+        str: Dream image or None if not found.
+    """
     try:
         log(f"Fetching dream image for dream id {dream_id}.", type="info")
         dream = get_dream(dream_id)
         log(f"Debug: Retrieved dream object: {dream}", type="info")
-        
+
         # Log the style being used
         log(f"Using image style: {style}", type="info")
 
@@ -127,6 +173,16 @@ def get_dream_image(dream_id, style="renaissance", quality="low", max_retries=5)
 
 
 def update_dream_analysis_and_image(dream_id, analysis=None, image=None):
+    """Update the analysis and image for a dream.
+
+    Args:
+        dream_id (str): ID of the dream.
+        analysis (str, optional): New analysis. Defaults to None.
+        image (str, optional): New image. Defaults to None.
+
+    Returns:
+        dict: Updated dream object or None if not found.
+    """
     log(f"Initiating update for dream analysis and image for dream id {dream_id}.", type="info")
 
     # Fetching the dream
