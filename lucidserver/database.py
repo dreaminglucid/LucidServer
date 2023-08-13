@@ -9,7 +9,7 @@ def create_dream(title, date, entry, userEmail):
         "title": title,
         "date": date,
         "entry": entry,
-        "useremail": userEmail, # Note the lowercase 'e'
+        "useremail": userEmail,
     }
     document = f"{title}\n{entry}"
     memory_id = create_memory("dreams", document, metadata=metadata)

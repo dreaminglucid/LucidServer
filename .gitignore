@@ -41,7 +41,7 @@ logs/
 
 # Other server related directories
 memory/
-src/config.ini
+lucidserver/config.ini
 
 # Heroku docker deploy files
 heroku.yml
