@@ -41,4 +41,8 @@ logs/
 
 # Other server related directories
 memory/
-/config.ini
+src/config.ini
+
+# Heroku docker deploy files
+heroku.yml
+Dockerfile

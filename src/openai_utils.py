@@ -15,7 +15,7 @@ from agentmemory import search_memory
 
 # Read config.ini file
 config = configparser.ConfigParser()
-config.read("config.ini")
+config.read("src/config.ini")
 
 # Get the API key from the config file
 openai_api_key = config.get("openai", "api_key")
