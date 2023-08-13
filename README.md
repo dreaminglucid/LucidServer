@@ -1,16 +1,27 @@
-# Lucid Server
-Lucid Server is the backend of the Lucid Journal project. It is responsible for database functionalilty, API calls, AI logic, Authorization, and more. We leverage cutting edge AI models like GPT-3.5/4 for text2speech and DALLE 2 for image generation.
+# Lucid Server: Backend for Lucid Journal
 
-The frontend for the project can be found here: https://github.com/cp-james-harbeck/LucidJournal
+Lucid Server is the core backend for the Lucid Journal project, handling database functionality, API calls, AI logic, authorization, and more. Leveraging cutting-edge AI models like GPT-3.5/4 for text generation and DALLE 2 for image synthesis, Lucid Server brings dreams to life.
 
-![image](resources/banner.png)
+![Lucid Journal Banner](resources/banner.png)
+
+## Features
+
+- **AI-Powered Text and Image Generation**: Utilize GPT and DALLE models to generate dream-like text and images.
+- **RESTful API**: Manage and analyze dream data with well-defined API endpoints.
+- **Flexible Deployment**: Deploy locally or on Heroku with ease.
+
+## Related Projects
+
+- **Frontend**: [Lucid Journal Frontend Repository](https://github.com/cp-james-harbeck/LucidJournal)
 
 ## Packages
-We utilize several agent-centric python packages from the [Autonomous Research Group](https://github.com/AutonomousResearchGroup).
 
-- https://github.com/AutonomousResearchGroup/agentmemory (Easy vectorDB - uses Chromadb locally and Supabase Postgres in production)
-- https://github.com/AutonomousResearchGroup/easycompletion (Streamlined OpenAI functions and validation)
-- https://github.com/AutonomousResearchGroup/agentlogger (Simple and good looking logs for agents)
+Lucid Server utilizes several agent-centric Python packages developed by the [Autonomous Research Group](https://github.com/AutonomousResearchGroup):
+
+- [agentmemory](https://github.com/AutonomousResearchGroup/agentmemory): Easy vectorDB using ChromaDB locally and Supabase Postgres in production.
+- [easycompletion](https://github.com/AutonomousResearchGroup/easycompletion): Streamlined OpenAI functions and validation.
+- [agentlogger](https://github.com/AutonomousResearchGroup/agentlogger): Simple and visually appealing logs for agents.
+
 
 ### Local Setup
 To set up the Lucid Journal backend server locally, follow these steps:
