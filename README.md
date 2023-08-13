@@ -1,6 +1,8 @@
 # Lucid Journal backend server
 The Lucid Journal backend server of the project is responsible for managing dream data, analyzing dream entries, and generating dream-inspired images using AI models like GPT-3.5/4 and DALLE 2.
 
+The frontend for the project can be found here: https://github.com/cp-james-harbeck/LucidJournal
+
 ![image](resources/banner.png)
 
 ## Packages
@@ -10,8 +12,8 @@ We utilize several agent-centric python packages from the [Autonomous Research G
 - https://github.com/AutonomousResearchGroup/easycompletion
 - https://github.com/AutonomousResearchGroup/agentlogger
 
-### Setup
-To set up the Lucid Journal backend server, follow these steps:
+### Local Setup
+To set up the Lucid Journal backend server locally, follow these steps:
 
 1. Install Python: Visit the official Python website and download the latest version of Python for your operating system.
 
@@ -58,7 +60,7 @@ The Lucid Journal backend server provides several endpoints to interact with dre
 To start the API server, execute the following command:
 
 ```
-python server.py
+python lucidserver/server.py
 ```
 
 By default, the API will run on `http://127.0.0.1:5000/`, and you can make requests to the API using tools like Postman or integrate it into your own applications.
@@ -83,6 +85,7 @@ By default, the API will run on `http://127.0.0.1:5000/`, and you can make reque
 - `git push heroku main` (push code to Heroku and start build)
 - `heroku logs --tail` (view build and runtime logs)
 - `heroku config:set KEY=VALUE` (set environment variables via Heroku CLI)
+- `heroku local -f Procfile.windows` (run server locally on a windows machine)
 
 ### Environment Variables
 Must set ENV variables in Heroku dashboard or with Heroku CLI tool:
