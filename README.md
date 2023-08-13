@@ -1,5 +1,5 @@
-# Lucid Journal backend server
-The Lucid Journal backend server of the project is responsible for managing dream data, analyzing dream entries, and generating dream-inspired images using AI models like GPT-3.5/4 and DALLE 2.
+# Lucid Server
+Lucid Server is the backend of the Lucid Journal project. It is responsible for database functionalilty, API calls, AI logic, Authorization, and more. We leverage cutting edge AI models like GPT-3.5/4 for text2speech and DALLE 2 for image generation.
 
 The frontend for the project can be found here: https://github.com/cp-james-harbeck/LucidJournal
 
@@ -8,9 +8,9 @@ The frontend for the project can be found here: https://github.com/cp-james-harb
 ## Packages
 We utilize several agent-centric python packages from the [Autonomous Research Group](https://github.com/AutonomousResearchGroup).
 
-- https://github.com/AutonomousResearchGroup/agentmemory
-- https://github.com/AutonomousResearchGroup/easycompletion
-- https://github.com/AutonomousResearchGroup/agentlogger
+- https://github.com/AutonomousResearchGroup/agentmemory (Easy vectorDB - uses Chromadb locally and Supabase Postgres in production)
+- https://github.com/AutonomousResearchGroup/easycompletion (Streamlined OpenAI functions and validation)
+- https://github.com/AutonomousResearchGroup/agentlogger (Simple and good looking logs for agents)
 
 ### Local Setup
 To set up the Lucid Journal backend server locally, follow these steps:
@@ -64,6 +64,13 @@ python lucidserver/server.py
 ```
 
 By default, the API will run on `http://127.0.0.1:5000/`, and you can make requests to the API using tools like Postman or integrate it into your own applications.
+
+Optionally, you can start the server locally with heroku, here is an example for running locally on heroku using a windows machine:
+
+```
+heroku local -f Procfile.windows
+```
+Then simply follow the steps above for using ngrok.
 
 ## Heroku Deploy
 
