@@ -2,8 +2,7 @@ import sys
 sys.path.append('.')
 
 import pytest
-from lucidserver.database import create_dream, get_dream, get_dreams, get_dream_analysis, get_dream_image, update_dream_analysis_and_image
-from lucidserver.openai_utils import search_dreams
+from lucidserver.database import create_dream, get_dream, get_dreams, get_dream_analysis, get_dream_image, update_dream_analysis_and_image, search_dreams
 
 
 # Mocking the create_memory function //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -378,7 +377,7 @@ def mock_search_memory(category, keyword, n_results=100):
 # Testing the search_dreams function when there are matching dreams for the given user
 def test_search_dreams_existing(monkeypatch):
     # Patching the search_memory function with mock function
-    monkeypatch.setattr('lucidserver.openai_utils.search_memory', mock_search_memory)
+    monkeypatch.setattr('lucidserver.database.search_memory', mock_search_memory)
 
     # Test inputs
     keyword = "Dream"
@@ -399,7 +398,7 @@ def test_search_dreams_existing(monkeypatch):
 # Testing the search_dreams function when no matching dreams exist for the given user
 def test_search_dreams_non_existing(monkeypatch):
     # Patching the search_memory function with mock function
-    monkeypatch.setattr('lucidserver.openai_utils.search_memory', mock_search_memory)
+    monkeypatch.setattr('lucidserver.database.search_memory', mock_search_memory)
 
     # Test inputs
     keyword = "NonExisting"
@@ -414,7 +413,7 @@ def test_search_dreams_non_existing(monkeypatch):
 # Testing the search_dreams function with multiple dreams but filtering by user email
 def test_search_dreams_filter_by_email(monkeypatch):
     # Patching the search_memory function with mock function
-    monkeypatch.setattr('lucidserver.openai_utils.search_memory', mock_search_memory)
+    monkeypatch.setattr('lucidserver.database.search_memory', mock_search_memory)
 
     # Test inputs
     keyword = "Dream"

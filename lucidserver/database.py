@@ -1,7 +1,7 @@
 import time
 from agentlogger import log
-from agentmemory import create_memory, get_memories, update_memory, get_memory
-from openai_utils import generate_dream_analysis, generate_dream_image, get_image_summary
+from agentmemory import create_memory, get_memories, update_memory, get_memory, search_memory
+from lucidserver.openai_utils import generate_dream_analysis, generate_dream_image, get_image_summary
 
 def create_dream(title, date, entry, userEmail):
     """Create a new dream in the memory.
@@ -223,3 +223,21 @@ def update_dream_analysis_and_image(dream_id, analysis=None, image=None):
     except Exception as e:
         log(f"Failed to update dream id {dream_id}. Error: {str(e)}", type="error", color="red")
         return None
+    
+def search_dreams(keyword, user_email):
+    log(f"Searching dreams for keyword: {keyword} and user email: {user_email}.", type="info")
+    search_results = search_memory("dreams", keyword, n_results=100)
+    dreams = [
+        {
+            "id": memory["id"],
+            "document": memory["document"],
+            "metadata": {
+                key: memory["metadata"][key]
+                for key in ["date", "title", "entry", "analysis"]
+                if key in memory["metadata"]
+            },
+        }
+        for memory in search_results
+        if memory['metadata']['useremail'] == user_email  # filter results by user email, using lowercase 'useremail'
+    ]
+    return dreams

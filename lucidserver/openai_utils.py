@@ -11,7 +11,6 @@ from easycompletion import (
     chat_completion,
     count_tokens,
 )
-from agentmemory import search_memory
 
 # Read config.ini file
 config = configparser.ConfigParser()
@@ -299,25 +298,6 @@ def regular_chat(message, user_email):
         return "Error: Unable to generate a response."
 
 
-def search_dreams(keyword, user_email):
-    log(f"Searching dreams for keyword: {keyword} and user email: {user_email}.", type="info")
-    search_results = search_memory("dreams", keyword, n_results=100)
-    dreams = [
-        {
-            "id": memory["id"],
-            "document": memory["document"],
-            "metadata": {
-                key: memory["metadata"][key]
-                for key in ["date", "title", "entry", "analysis"]
-                if key in memory["metadata"]
-            },
-        }
-        for memory in search_results
-        if memory['metadata']['useremail'] == user_email  # filter results by user email, using lowercase 'useremail'
-    ]
-    return dreams
-
-
 def call_function_by_name(function_name, prompt, messages):
     # Get the corresponding function from the available_functions dictionary
     function_to_call = next(
@@ -351,6 +331,7 @@ def call_function_by_name(function_name, prompt, messages):
     return response
 
 def search_chat_with_dreams(function_name, prompt, user_email, messages=None):
+    from lucidserver.database import search_dreams
     global message_histories  # Access the global dictionary
 
     try:

@@ -2,7 +2,8 @@ import sys
 sys.path.append('.')
 
 import pytest
-from lucidserver.openai_utils import get_image_summary, generate_dream_analysis, generate_dream_image, regular_chat, search_dreams, call_function_by_name, search_chat_with_dreams
+from lucidserver.database import search_dreams
+from lucidserver.openai_utils import get_image_summary, generate_dream_analysis, generate_dream_image, regular_chat, call_function_by_name, search_chat_with_dreams
 from unittest.mock import patch, Mock
 
 
@@ -154,6 +155,8 @@ def test_regular_chat_exception():
         assert result == "Error: Unable to generate a response.", f"Expected error message, but got {result}"
         
         
+        
+        
 # Mock search_chat_with_dream function /////////////////////////////////////////////////////////////////////////////////////////////////////////////  
 def mock_search_memory(*args, **kwargs):
     return [
@@ -170,7 +173,7 @@ def mock_count_tokens(*args, **kwargs):
 
 # Test case for search_dreams function
 def test_search_dreams():
-    with patch('lucidserver.openai_utils.search_memory', side_effect=mock_search_memory):
+    with patch('lucidserver.database.search_memory', side_effect=mock_search_memory):
         keyword = "Dream"
         user_email = "user@example.com"
         result = search_dreams(keyword, user_email)
@@ -187,7 +190,7 @@ def test_call_function_by_name():
 
 # Test case for search_chat_with_dreams function with search results
 def test_search_chat_with_dreams_with_results():
-    with patch('lucidserver.openai_utils.search_dreams', side_effect=mock_search_memory), \
+    with patch('lucidserver.database.search_dreams', side_effect=mock_search_memory), \
          patch('lucidserver.openai_utils.count_tokens', side_effect=mock_count_tokens), \
          patch('lucidserver.openai_utils.call_function_by_name', side_effect=mock_function_completion):
         function_name = "discuss_emotions"
@@ -199,7 +202,7 @@ def test_search_chat_with_dreams_with_results():
 
 # Test case for search_chat_with_dreams function without search results
 def test_search_chat_with_dreams_without_results():
-    with patch('lucidserver.openai_utils.search_memory', side_effect=lambda *args, **kwargs: []), \
+    with patch('lucidserver.database.search_memory', side_effect=lambda *args, **kwargs: []), \
          patch('lucidserver.openai_utils.count_tokens', side_effect=mock_count_tokens), \
          patch('lucidserver.openai_utils.call_function_by_name', side_effect=mock_function_completion):
         function_name = "discuss_emotions"
