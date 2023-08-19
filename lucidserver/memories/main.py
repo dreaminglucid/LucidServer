@@ -1,7 +1,7 @@
 import time
 from agentlogger import log
-from agentmemory import create_memory, get_memories, update_memory, get_memory, search_memory
-from lucidserver.openai_utils import generate_dream_analysis, generate_dream_image, get_image_summary
+from agentmemory import create_memory, get_memories, update_memory, get_memory, search_memory, delete_memory
+from actions.main import generate_dream_analysis, generate_dream_image, get_image_summary
 
 def create_dream(title, date, entry, userEmail):
     """Create a new dream in the memory.
@@ -241,3 +241,34 @@ def search_dreams(keyword, user_email):
         if memory['metadata']['useremail'] == user_email  # filter results by user email, using lowercase 'useremail'
     ]
     return dreams
+
+
+def delete_dream(id):
+    """
+    Delete a dream by ID.
+
+    Arguments:
+        id (str/int): The ID of the dream.
+
+    Returns:
+        bool: True if the dream was deleted, False otherwise.
+
+    Example:
+        >>> delete_dream("1")
+    """
+    
+    dream_to_delete = get_memory(category="dreams", id=id)
+
+    if dream_to_delete is None:
+        log(f"WARNING: Tried to delete dream with ID {id}, but it does not exist.", type="warning")
+        return False
+
+    # Delete the dream using agentmemory's delete_memory function
+    result = delete_memory(category="dreams", id=id)
+
+    if result:
+        log(f"Deleted dream with ID {id}")
+        return True
+    else:
+        log(f"Failed to delete dream with ID {id}")
+        return False

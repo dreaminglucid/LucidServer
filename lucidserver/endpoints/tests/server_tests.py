@@ -1,6 +1,6 @@
 import json
 import pytest
-from lucidserver.server import app
+from lucidserver.app import app
 from unittest.mock import patch
 
 
