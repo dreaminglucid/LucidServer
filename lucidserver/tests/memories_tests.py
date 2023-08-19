@@ -3,6 +3,7 @@ sys.path.append('.')
 
 import pytest
 from lucidserver.memories.main import create_dream, get_dream, get_dreams, get_dream_analysis, get_dream_image, update_dream_analysis_and_image, search_dreams
+from lucidserver.actions.main import generate_dream_analysis, generate_dream_image, get_image_summary
 
 
 # Mocking the create_memory function //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -28,7 +29,7 @@ def mock_get_memory(category, memory_id):
 def test_create_dream(monkeypatch):
     # Patching the create_memory and get_memory functions with mock functions
     monkeypatch.setattr('agentmemory.create_memory', mock_create_memory)
-    monkeypatch.setattr('lucidserver.memories.memories_main.get_memory', mock_get_memory)
+    monkeypatch.setattr('lucidserver.memories.main.get_memory', mock_get_memory)
 
     # Test inputs
     title = "Dream Title"
@@ -53,7 +54,7 @@ def test_create_dream(monkeypatch):
 # Testing the get_dream function when the dream exists ////////////////////////////////////////////////////////////////////////////////////////////
 def test_get_dream_existing(monkeypatch):
     # Patching the get_memory function with mock function
-    monkeypatch.setattr('lucidserver.memories.memories_main.get_memory', mock_get_memory)
+    monkeypatch.setattr('lucidserver.memories.main.get_memory', mock_get_memory)
 
     # Test input
     dream_id = "memory_id_12345"
@@ -77,7 +78,7 @@ def test_get_dream_non_existing(monkeypatch):
         return None
 
     # Patching the get_memory function with mock function
-    monkeypatch.setattr('lucidserver.memories.memories_main.get_memory', mock_get_memory_non_existing)
+    monkeypatch.setattr('lucidserver.memories.main.get_memory', mock_get_memory_non_existing)
 
     # Test input
     dream_id = "non_existing_id"
@@ -98,7 +99,7 @@ def mock_get_memory_with_optional_fields(category, memory_id):
 # Testing the get_dream function with optional fields
 def test_get_dream_with_optional_fields(monkeypatch):
     # Patching the get_memory function with modified mock function
-    monkeypatch.setattr('lucidserver.memories.memories_main.get_memory', mock_get_memory_with_optional_fields)
+    monkeypatch.setattr('lucidserver.memories.main.get_memory', mock_get_memory_with_optional_fields)
 
     # Test input
     dream_id = "memory_id_12345"
@@ -141,7 +142,7 @@ def mock_get_memories(category, n_results=None):
 # Testing the get_dreams function when dreams exist for the user
 def test_get_dreams_existing(monkeypatch):
     # Patching the get_memories function with mock function
-    monkeypatch.setattr('lucidserver.memories.memories_main.get_memories', mock_get_memories)
+    monkeypatch.setattr('lucidserver.memories.main.get_memories', mock_get_memories)
 
     # Test input
     user_email = "user@example.com"
@@ -163,7 +164,7 @@ def test_get_dreams_existing(monkeypatch):
 # Testing the get_dreams function when no dreams exist for the user
 def test_get_dreams_non_existing(monkeypatch):
     # Patching the get_memories function with mock function
-    monkeypatch.setattr('lucidserver.memories.memories_main.get_memories', mock_get_memories)
+    monkeypatch.setattr('lucidserver.memories.main.get_memories', mock_get_memories)
 
     # Test input
     user_email = "non_existing@example.com"
@@ -196,8 +197,8 @@ def mock_generate_dream_analysis(entry, prefix):
 # Testing the get_dream_analysis function when the dream exists
 def test_get_dream_analysis_existing(monkeypatch):
     # Patching the get_dream and generate_dream_analysis functions with mock functions
-    monkeypatch.setattr('lucidserver.memories.memories_main.get_dream', mock_get_dream)  # Using the new mock function
-    monkeypatch.setattr('lucidserver.memories.memories_main.generate_dream_analysis', mock_generate_dream_analysis)
+    monkeypatch.setattr('lucidserver.memories.main.get_dream', mock_get_dream)  # Using the new mock function
+    monkeypatch.setattr('lucidserver.actions.main.generate_dream_analysis', mock_generate_dream_analysis)
 
     # Test input
     dream_id = "memory_id_12345"
@@ -211,7 +212,7 @@ def test_get_dream_analysis_existing(monkeypatch):
 # Testing the get_dream_analysis function when the dream does not exist
 def test_get_dream_analysis_non_existing(monkeypatch):
     # Patching the get_dream function with mock function to return None
-    monkeypatch.setattr('lucidserver.memories.memories_main.get_dream', lambda dream_id: None)
+    monkeypatch.setattr('lucidserver.memories.main.get_dream', lambda dream_id: None)
 
     # Test input
     dream_id = "non_existing_id"
@@ -237,10 +238,10 @@ def mock_generate_dream_image(dreams, dream_id, style, quality):
 
 def test_get_dream_image_existing(monkeypatch):
     # Patching the dependent functions with mock functions
-    monkeypatch.setattr('lucidserver.memories.memories_main.get_dream', mock_get_dream) # Assuming existing mock function
-    monkeypatch.setattr('lucidserver.memories.memories_main.get_dreams', mock_get_dreams) # Assuming existing mock function
-    monkeypatch.setattr('lucidserver.memories.memories_main.get_image_summary', mock_get_image_summary)
-    monkeypatch.setattr('lucidserver.memories.memories_main.generate_dream_image', mock_generate_dream_image)
+    monkeypatch.setattr('lucidserver.memories.main.get_dream', mock_get_dream) # Assuming existing mock function
+    monkeypatch.setattr('lucidserver.memories.main.get_dreams', mock_get_dreams) # Assuming existing mock function
+    monkeypatch.setattr('lucidserver.actions.main.get_image_summary', mock_get_image_summary)
+    monkeypatch.setattr('lucidserver.actions.main.generate_dream_image', mock_generate_dream_image)
 
     # Test input
     dream_id = "memory_id_12345"
@@ -257,10 +258,10 @@ def mock_generate_dream_image_failure(dreams, dream_id, style, quality):
 
 def test_get_dream_image_failure(monkeypatch):
     # Patching the dependent functions with mock functions
-    monkeypatch.setattr('lucidserver.memories.memories_main.get_dream', mock_get_dream) # Assuming existing mock function
-    monkeypatch.setattr('lucidserver.memories.memories_main.get_dreams', mock_get_dreams) # Assuming existing mock function
-    monkeypatch.setattr('lucidserver.memories.memories_main.get_image_summary', mock_get_image_summary)
-    monkeypatch.setattr('lucidserver.memories.memories_main.generate_dream_image', mock_generate_dream_image_failure)
+    monkeypatch.setattr('lucidserver.memories.main.get_dream', mock_get_dream) # Assuming existing mock function
+    monkeypatch.setattr('lucidserver.memories.main.get_dreams', mock_get_dreams) # Assuming existing mock function
+    monkeypatch.setattr('lucidserver.actions.main.get_image_summary', mock_get_image_summary)
+    monkeypatch.setattr('lucidserver.actions.main.generate_dream_image', mock_generate_dream_image_failure)
 
     # Test input
     dream_id = "memory_id_12345"
@@ -279,8 +280,8 @@ def mock_update_memory(category, memory_id, metadata=None):
 # Testing the successful update of dream analysis and image
 def test_update_dream_analysis_and_image_success(monkeypatch):
     # Patching the dependent functions with mock functions
-    monkeypatch.setattr('lucidserver.memories.memories_main.get_dream', mock_get_dream) # Assuming existing mock function
-    monkeypatch.setattr('lucidserver.memories.memories_main.update_memory', mock_update_memory)
+    monkeypatch.setattr('lucidserver.memories.main.get_dream', mock_get_dream) # Assuming existing mock function
+    monkeypatch.setattr('lucidserver.memories.main.update_memory', mock_update_memory)
 
     # Test input
     dream_id = "memory_id_12345"
@@ -297,7 +298,7 @@ def test_update_dream_analysis_and_image_success(monkeypatch):
 # Testing the update with invalid analysis type
 def test_update_dream_analysis_and_image_invalid_analysis(monkeypatch):
     # Patching the dependent functions with mock functions
-    monkeypatch.setattr('lucidserver.memories.memories_main.get_dream', mock_get_dream) # Assuming existing mock function
+    monkeypatch.setattr('lucidserver.memories.main.get_dream', mock_get_dream) # Assuming existing mock function
 
     # Test input
     dream_id = "memory_id_12345"
@@ -312,7 +313,7 @@ def test_update_dream_analysis_and_image_invalid_analysis(monkeypatch):
 # Testing the update with invalid image type
 def test_update_dream_analysis_and_image_invalid_image(monkeypatch):
     # Patching the dependent functions with mock functions
-    monkeypatch.setattr('lucidserver.memories.memories_main.get_dream', mock_get_dream) # Assuming existing mock function
+    monkeypatch.setattr('lucidserver.memories.main.get_dream', mock_get_dream) # Assuming existing mock function
 
     # Test input
     dream_id = "memory_id_12345"
@@ -331,8 +332,8 @@ def mock_update_memory_exception(category, memory_id, metadata=None):
 # Testing the update with an exception during the update process
 def test_update_dream_analysis_and_image_exception(monkeypatch):
     # Patching the dependent functions with mock functions
-    monkeypatch.setattr('lucidserver.memories.memories_main.get_dream', mock_get_dream) # Assuming existing mock function
-    monkeypatch.setattr('lucidserver.memories.memories_main.update_memory', mock_update_memory_exception)
+    monkeypatch.setattr('lucidserver.memories.main.get_dream', mock_get_dream) # Assuming existing mock function
+    monkeypatch.setattr('lucidserver.memories.main.update_memory', mock_update_memory_exception)
 
     # Test input
     dream_id = "memory_id_12345"
@@ -377,7 +378,7 @@ def mock_search_memory(category, keyword, n_results=100):
 # Testing the search_dreams function when there are matching dreams for the given user
 def test_search_dreams_existing(monkeypatch):
     # Patching the search_memory function with mock function
-    monkeypatch.setattr('lucidserver.memories.memories_main.search_memory', mock_search_memory)
+    monkeypatch.setattr('lucidserver.memories.main.search_memory', mock_search_memory)
 
     # Test inputs
     keyword = "Dream"
@@ -398,7 +399,7 @@ def test_search_dreams_existing(monkeypatch):
 # Testing the search_dreams function when no matching dreams exist for the given user
 def test_search_dreams_non_existing(monkeypatch):
     # Patching the search_memory function with mock function
-    monkeypatch.setattr('lucidserver.memories.memories_main.search_memory', mock_search_memory)
+    monkeypatch.setattr('lucidserver.memories.main.search_memory', mock_search_memory)
 
     # Test inputs
     keyword = "NonExisting"
@@ -413,7 +414,7 @@ def test_search_dreams_non_existing(monkeypatch):
 # Testing the search_dreams function with multiple dreams but filtering by user email
 def test_search_dreams_filter_by_email(monkeypatch):
     # Patching the search_memory function with mock function
-    monkeypatch.setattr('lucidserver.memories.memories_main.search_memory', mock_search_memory)
+    monkeypatch.setattr('lucidserver.memories.main.search_memory', mock_search_memory)
 
     # Test inputs
     keyword = "Dream"

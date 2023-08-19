@@ -43,9 +43,9 @@ def client():
 
 
 # Test create dream endpoint
-@patch("lucidserver.endpoints.endpoints_main.create_dream", return_value={"id": 1})
-@patch("lucidserver.endpoints.endpoints_main.extract_user_email_from_token", return_value=test_user_email)
-@patch("lucidserver.endpoints.endpoints_main.get_dream", return_value=mocked_dream)
+@patch("lucidserver.endpoints.main.create_dream", return_value={"id": 1})
+@patch("lucidserver.endpoints.main.extract_user_email_from_token", return_value=test_user_email)
+@patch("lucidserver.endpoints.main.get_dream", return_value=mocked_dream)
 def test_create_dream_endpoint(mock_get_dream, mock_extract_user_email_from_token, mock_create_dream, client):
     headers = {"Authorization": test_token}
     response = client.post("/api/dreams", json=dream_args, headers=headers)
@@ -54,9 +54,9 @@ def test_create_dream_endpoint(mock_get_dream, mock_extract_user_email_from_toke
 
 
 # Test get dreams endpoint
-@patch("lucidserver.endpoints.endpoints_main.get_dreams", return_value=[{"id": 1}])
-@patch("lucidserver.endpoints.endpoints_main.extract_user_email_from_token", return_value=test_user_email)
-@patch("lucidserver.endpoints.endpoints_main.get_dream", return_value=mocked_dream)
+@patch("lucidserver.endpoints.main.get_dreams", return_value=[{"id": 1}])
+@patch("lucidserver.endpoints.main.extract_user_email_from_token", return_value=test_user_email)
+@patch("lucidserver.endpoints.main.get_dream", return_value=mocked_dream)
 def test_get_dreams_endpoint(mock_get_dream, mock_extract_user_email_from_token, mock_get_dreams, client):
     headers = {"Authorization": test_token}
     response = client.get("/api/dreams", headers=headers)
@@ -65,9 +65,9 @@ def test_get_dreams_endpoint(mock_get_dream, mock_extract_user_email_from_token,
 
 
 # Test update dream endpoint
-@patch("lucidserver.endpoints.endpoints_main.update_dream_analysis_and_image", return_value={"id": 1, "analysis": "updated_analysis"})
-@patch("lucidserver.endpoints.endpoints_main.extract_user_email_from_token", return_value=test_user_email)
-@patch("lucidserver.endpoints.endpoints_main.get_dream", return_value=mocked_dream)
+@patch("lucidserver.endpoints.main.update_dream_analysis_and_image", return_value={"id": 1, "analysis": "updated_analysis"})
+@patch("lucidserver.endpoints.main.extract_user_email_from_token", return_value=test_user_email)
+@patch("lucidserver.endpoints.main.get_dream", return_value=mocked_dream)
 def test_update_dream_endpoint(mock_get_dream, mock_extract_user_email_from_token, mock_update_dream, client):
     headers = {"Authorization": test_token}
     response = client.put(
@@ -77,8 +77,8 @@ def test_update_dream_endpoint(mock_get_dream, mock_extract_user_email_from_toke
 
 
 # Test get dream endpoint
-@patch("lucidserver.endpoints.endpoints_main.extract_user_email_from_token", return_value=test_user_email)
-@patch("lucidserver.endpoints.endpoints_main.get_dream", return_value=mocked_dream)
+@patch("lucidserver.endpoints.main.extract_user_email_from_token", return_value=test_user_email)
+@patch("lucidserver.endpoints.main.get_dream", return_value=mocked_dream)
 def test_get_dream_endpoint(mock_get_dream, mock_extract_user_email_from_token, client):
     headers = {"Authorization": test_token}
     response = client.get("/api/dreams/1", headers=headers)
@@ -87,9 +87,9 @@ def test_get_dream_endpoint(mock_get_dream, mock_extract_user_email_from_token, 
 
 
 # Test get dream analysis endpoint
-@patch("lucidserver.endpoints.endpoints_main.get_dream_analysis", return_value={"analysis": "test_analysis"})
-@patch("lucidserver.endpoints.endpoints_main.extract_user_email_from_token", return_value=test_user_email)
-@patch("lucidserver.endpoints.endpoints_main.get_dream", return_value=mocked_dream)
+@patch("lucidserver.endpoints.main.get_dream_analysis", return_value={"analysis": "test_analysis"})
+@patch("lucidserver.endpoints.main.extract_user_email_from_token", return_value=test_user_email)
+@patch("lucidserver.endpoints.main.get_dream", return_value=mocked_dream)
 def test_get_dream_analysis_endpoint(mock_get_dream, mock_extract_user_email_from_token, mock_get_dream_analysis, client):
     headers = {"Authorization": test_token}
     response = client.get("/api/dreams/1/analysis", headers=headers)
@@ -98,9 +98,9 @@ def test_get_dream_analysis_endpoint(mock_get_dream, mock_extract_user_email_fro
 
 
 # Test get dream image endpoint
-@patch("lucidserver.endpoints.endpoints_main.get_dream_image", return_value="test_image")
-@patch("lucidserver.endpoints.endpoints_main.extract_user_email_from_token", return_value=test_user_email)
-@patch("lucidserver.endpoints.endpoints_main.get_dream", return_value=mocked_dream)
+@patch("lucidserver.endpoints.main.get_dream_image", return_value="test_image")
+@patch("lucidserver.endpoints.main.extract_user_email_from_token", return_value=test_user_email)
+@patch("lucidserver.endpoints.main.get_dream", return_value=mocked_dream)
 def test_get_dream_image_endpoint(mock_get_dream, mock_extract_user_email_from_token, mock_get_dream_image, client):
     headers = {"Authorization": test_token}
     response = client.get("/api/dreams/1/image", headers=headers)
@@ -109,9 +109,9 @@ def test_get_dream_image_endpoint(mock_get_dream, mock_extract_user_email_from_t
 
 
 # Test search dreams endpoint
-@patch("lucidserver.endpoints.endpoints_main.search_dreams", return_value=[{"id": 1}])
-@patch("lucidserver.endpoints.endpoints_main.extract_user_email_from_token", return_value=test_user_email)
-@patch("lucidserver.endpoints.endpoints_main.get_dream", return_value=mocked_dream)
+@patch("lucidserver.endpoints.main.search_dreams", return_value=[{"id": 1}])
+@patch("lucidserver.endpoints.main.extract_user_email_from_token", return_value=test_user_email)
+@patch("lucidserver.endpoints.main.get_dream", return_value=mocked_dream)
 def test_search_dreams_endpoint(mock_get_dream, mock_extract_user_email_from_token, mock_search_dreams, client):
     headers = {"Authorization": test_token}
     response = client.post("/api/dreams/search",
