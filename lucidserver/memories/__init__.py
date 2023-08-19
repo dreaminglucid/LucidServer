@@ -1,4 +1,4 @@
-from .main import (
+from .memories_main import (
     create_dream,
     get_dream,
     get_dreams,

@@ -331,7 +331,7 @@ def call_function_by_name(function_name, prompt, messages):
     return response
 
 def search_chat_with_dreams(function_name, prompt, user_email, messages=None):
-    from memories.main import search_dreams
+    from memories.memories_main import search_dreams
     global message_histories  # Access the global dictionary
 
     try:

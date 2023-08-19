@@ -5,7 +5,7 @@ import requests
 import json
 from webargs import fields
 from webargs.flaskparser import use_args
-from memories.main import (
+from memories.memories_main import (
     create_dream,
     get_dreams,
     get_dream,
@@ -15,7 +15,7 @@ from memories.main import (
     search_dreams,
     delete_dream
 )
-from actions.main import search_chat_with_dreams, regular_chat
+from actions.actions_main import search_chat_with_dreams, regular_chat
 from agentlogger import log, print_header
 import traceback
 

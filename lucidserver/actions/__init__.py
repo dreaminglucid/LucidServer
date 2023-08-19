@@ -1,4 +1,4 @@
-from .main import (
+from .actions_main import (
     get_image_summary,
     generate_dream_analysis,
     generate_dream_image,
