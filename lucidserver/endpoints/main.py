@@ -5,7 +5,7 @@ import requests
 import json
 from webargs import fields
 from webargs.flaskparser import use_args
-from memories import (
+from lucidserver.memories import (
     create_dream,
     get_dreams,
     get_dream,
@@ -15,7 +15,7 @@ from memories import (
     search_dreams,
     delete_dream
 )
-from actions import search_chat_with_dreams, regular_chat
+from lucidserver.actions import search_chat_with_dreams, regular_chat
 from agentlogger import log
 import traceback
 
