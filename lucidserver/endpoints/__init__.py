@@ -1,4 +1,4 @@
-from .endpoints_main import (
+from .main import (
     register_endpoints,
     create_dream,
     get_dreams,

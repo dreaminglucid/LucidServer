@@ -1,7 +1,7 @@
 # app.py
 
 from flask import Flask
-from endpoints.endpoints_main import register_endpoints
+from endpoints import register_endpoints
 from agentlogger import print_header
 
 app = Flask(__name__)

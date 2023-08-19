@@ -1,7 +1,7 @@
 import time
 from agentlogger import log
 from agentmemory import create_memory, get_memories, update_memory, get_memory, search_memory, delete_memory
-from actions.actions_main import generate_dream_analysis, generate_dream_image, get_image_summary
+from actions import generate_dream_analysis, generate_dream_image, get_image_summary
 
 def create_dream(title, date, entry, userEmail):
     """Create a new dream in the memory.

@@ -2,8 +2,8 @@ import sys
 sys.path.append('.')
 
 import pytest
-from lucidserver.memories.memories_main import search_dreams
-from lucidserver.actions.actions_main import get_image_summary, generate_dream_analysis, generate_dream_image, regular_chat, call_function_by_name, search_chat_with_dreams
+from lucidserver.memories.main import search_dreams
+from lucidserver.actions.main import get_image_summary, generate_dream_analysis, generate_dream_image, regular_chat, call_function_by_name, search_chat_with_dreams
 from unittest.mock import patch, Mock
 
 
