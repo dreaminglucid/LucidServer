@@ -1,1 +1,1 @@
-web: gunicorn lucidserver.server:app
+web: gunicorn app:app
