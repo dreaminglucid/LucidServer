@@ -2,7 +2,7 @@ import sys
 sys.path.append('.')
 
 from unittest.mock import patch
-from lucidserver.app import app
+from app import app
 from lucidserver.endpoints.main import *
 import pytest
 import json

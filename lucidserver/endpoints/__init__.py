@@ -9,7 +9,8 @@ from .main import (
     search_dreams,
     delete_dream,
     search_chat_with_dreams,
-    regular_chat
+    regular_chat,
+    extract_user_email_from_token
 )
 
 __all__ = [
@@ -23,5 +24,6 @@ __all__ = [
     "search_dreams",
     "delete_dream",
     "search_chat_with_dreams",
-    "regular_chat"
+    "regular_chat",
+    "extract_user_email_from_token"
 ]

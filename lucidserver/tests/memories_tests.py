@@ -197,7 +197,7 @@ def mock_generate_dream_analysis(entry, prefix):
 def test_get_dream_analysis_existing(monkeypatch):
     # Patching the get_dream and generate_dream_analysis functions with mock functions
     monkeypatch.setattr('lucidserver.memories.main.get_dream', mock_get_dream)  # Using the new mock function
-    monkeypatch.setattr('lucidserver.actions.main.generate_dream_analysis', mock_generate_dream_analysis)
+    monkeypatch.setattr('lucidserver.memories.main.generate_dream_analysis', mock_generate_dream_analysis)
 
     # Test input
     dream_id = "memory_id_12345"
@@ -239,8 +239,8 @@ def test_get_dream_image_existing(monkeypatch):
     # Patching the dependent functions with mock functions
     monkeypatch.setattr('lucidserver.memories.main.get_dream', mock_get_dream) # Assuming existing mock function
     monkeypatch.setattr('lucidserver.memories.main.get_dreams', mock_get_dreams) # Assuming existing mock function
-    monkeypatch.setattr('lucidserver.actions.main.get_image_summary', mock_get_image_summary)
-    monkeypatch.setattr('lucidserver.actions.main.generate_dream_image', mock_generate_dream_image)
+    monkeypatch.setattr('lucidserver.memories.main.get_image_summary', mock_get_image_summary)
+    monkeypatch.setattr('lucidserver.memories.main.generate_dream_image', mock_generate_dream_image)
 
     # Test input
     dream_id = "memory_id_12345"
