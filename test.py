@@ -1,0 +1,1 @@
+from lucidserver.tests import *
