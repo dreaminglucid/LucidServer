@@ -1,11 +1,17 @@
 import time
+import json
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_JUSTIFY
 from agentlogger import log
-from agentmemory import create_memory, get_memories, update_memory, get_memory, search_memory, delete_memory, count_memories
+from agentmemory import create_memory, get_memories, update_memory, get_memory, search_memory, delete_memory, count_memories, export_memory_to_file, export_memory_to_json, get_client
 from lucidserver.actions import generate_dream_analysis, generate_dream_image, get_image_summary
+
 
 def create_dream(title, date, entry, userEmail):
     """Create a new dream in the memory.
-    
+
     Args:
         title (str): Title of the dream.
         date (str): Date of the dream.
@@ -67,7 +73,8 @@ def get_dream(dream_id):
     if "image" in dream["metadata"]:
         dream_data["image"] = dream["metadata"]["image"]
 
-    log(f"Successfully retrieved dream with id {dream_id}: {dream_data}", type="info")
+    log(
+        f"Successfully retrieved dream with id {dream_id}: {dream_data}", type="info")
     return dream_data
 
 
@@ -103,7 +110,8 @@ def get_dreams(userEmail):
 
             dreams.append(dream_data)
 
-    log(f"Debug: Retrieved dreams for userEmail {userEmail}: {dreams}", type="info")
+    log(
+        f"Debug: Retrieved dreams for userEmail {userEmail}: {dreams}", type="info")
     return dreams
 
 
@@ -158,7 +166,8 @@ def get_dream_image(dream_id, style="renaissance", quality="low", max_retries=5)
         # Log the style being used
         log(f"Using image style: {style}", type="info")
 
-        userEmail = dream["metadata"]["useremail"]  # get useremail from dream metadata, updated line
+        # get useremail from dream metadata, updated line
+        userEmail = dream["metadata"]["useremail"]
         dreams = get_dreams(userEmail)  # pass userEmail to get_dreams()
         summary = get_image_summary(dream["metadata"]["entry"])
         for _ in range(max_retries):
@@ -188,7 +197,8 @@ def update_dream_analysis_and_image(dream_id, analysis=None, image=None):
     Returns:
         dict: Updated dream object or None if not found.
     """
-    log(f"Initiating update for dream analysis and image for dream id {dream_id}.", type="info")
+    log(
+        f"Initiating update for dream analysis and image for dream id {dream_id}.", type="info")
 
     # Fetching the dream
     dream = get_dream(dream_id)
@@ -199,22 +209,25 @@ def update_dream_analysis_and_image(dream_id, analysis=None, image=None):
     # Validating metadata
     metadata = dream.get("metadata")
     if metadata is None:
-        log(f"Metadata for dream with id {dream_id} not found.", type="error", color="red")
+        log(f"Metadata for dream with id {dream_id} not found.",
+            type="error", color="red")
         return None
 
     # Ensuring analysis and image are valid
     if analysis:
-        if isinstance(analysis, str): # Validate the type or content of analysis as needed
+        if isinstance(analysis, str):  # Validate the type or content of analysis as needed
             metadata["analysis"] = analysis
         else:
-            log(f"Invalid analysis data for dream id {dream_id}.", type="error", color="red")
+            log(f"Invalid analysis data for dream id {dream_id}.",
+                type="error", color="red")
             return None
 
     if image:
-        if isinstance(image, str): # Validate the type or content of image as needed
+        if isinstance(image, str):  # Validate the type or content of image as needed
             metadata["image"] = image
         else:
-            log(f"Invalid image data for dream id {dream_id}.", type="error", color="red")
+            log(f"Invalid image data for dream id {dream_id}.",
+                type="error", color="red")
             return None
 
     # Logging the state before the update
@@ -226,9 +239,11 @@ def update_dream_analysis_and_image(dream_id, analysis=None, image=None):
         log("Dream analysis and image updated successfully.", type="info")
         return dream
     except Exception as e:
-        log(f"Failed to update dream id {dream_id}. Error: {str(e)}", type="error", color="red")
+        log(f"Failed to update dream id {dream_id}. Error: {str(e)}",
+            type="error", color="red")
         return None
-    
+
+
 def search_dreams(keyword, user_email):
     log(f"Searching dreams for keyword: {keyword} and user email: {user_email}.", type="info")
     search_results = search_memory("dreams", keyword, n_results=100)
@@ -243,7 +258,8 @@ def search_dreams(keyword, user_email):
             },
         }
         for memory in search_results
-        if memory['metadata']['useremail'] == user_email  # filter results by user email, using lowercase 'useremail'
+        # filter results by user email, using lowercase 'useremail'
+        if memory['metadata']['useremail'] == user_email
     ]
     return dreams
 
@@ -261,11 +277,12 @@ def delete_dream(id):
     Example:
         >>> delete_dream("1")
     """
-    
+
     dream_to_delete = get_memory(category="dreams", id=id)
 
     if dream_to_delete is None:
-        log(f"WARNING: Tried to delete dream with ID {id}, but it does not exist.", type="warning")
+        log(
+            f"WARNING: Tried to delete dream with ID {id}, but it does not exist.", type="warning")
         return False
 
     # Delete the dream using agentmemory's delete_memory function
@@ -277,3 +294,80 @@ def delete_dream(id):
     else:
         log(f"Failed to delete dream with ID {id}")
         return False
+
+
+def export_memory_to_json(include_embeddings=True):
+    collections = get_client().list_collections()
+    collections_dict = {}
+    for collection in collections:
+        collection_name = collection.name
+        collections_dict[collection_name] = []
+        memories = get_memories(
+            collection_name, include_embeddings=include_embeddings)
+        for memory in memories:
+            collections_dict[collection_name].append(memory)
+    return collections_dict
+
+
+def export_dreams_to_json_file(path="./dreams.json"):
+    collections_dict = export_memory_to_json(include_embeddings=False)
+    dreams = collections_dict.get('dreams', [])
+    with open(path, "w") as outfile:
+        json.dump(dreams, outfile)
+
+
+def export_dreams_to_pdf(path="./dreams.pdf"):
+    collections_dict = export_memory_to_json(include_embeddings=False)
+    dreams = collections_dict.get('dreams', [])
+
+    # Filter out dreams with specific title, entry, and analysis
+    dreams = [dream for dream in dreams if not (
+        dream.get('metadata', {}).get('title', '') == 'Dream Title' and
+        dream.get('metadata', {}).get('entry', '') == 'Dream Entry' and
+        dream.get('metadata', {}).get('analysis', 'No analysis available.') == 'No analysis available.'
+    )]
+
+    # Set up the PDF document
+    doc = SimpleDocTemplate(path, pagesize=letter)
+    Story = []
+
+    # Define some styles
+    styles = getSampleStyleSheet()
+    styles.add(ParagraphStyle(name='Justify', alignment=TA_JUSTIFY))
+    title_style = styles['Heading1']
+    entry_style = styles['BodyText']
+    analysis_style = styles['Justify']
+
+    for dream in dreams:
+        title = dream['metadata']['title']
+        entry = dream['metadata']['entry']
+        analysis = dream['metadata'].get(
+            'analysis', 'No analysis available.')  # Get analysis if available
+
+        # Add title, entry, and analysis to PDF as paragraphs
+        Story.append(
+            Paragraph(f"<strong>Title:</strong> {title}", title_style))
+        Story.append(Spacer(1, 12))
+        Story.append(
+            Paragraph(f"<strong>Entry:</strong> {entry}", entry_style))
+        Story.append(Spacer(1, 12))
+        Story.append(
+            Paragraph(f"<strong>Analysis:</strong> {analysis}", analysis_style))
+        Story.append(Spacer(1, 24))  # Add some spacing between dreams
+
+    # Build the PDF with the content
+    doc.build(Story)
+
+
+def export_dreams_to_txt(path="./dreams.txt"):
+    collections_dict = export_memory_to_json(include_embeddings=False)
+    dreams = collections_dict.get('dreams', [])
+    with open(path, "w") as txtfile:
+        for dream in dreams:
+            title = dream.get('metadata', {}).get('title', '')
+            entry = dream.get('metadata', {}).get('entry', '')
+            analysis = dream.get('metadata', {}).get(
+                'analysis', 'No analysis available.')  # Get analysis if available
+            # Add analysis to TXT
+            txtfile.write(
+                f"Title: {title}\nEntry: {entry}\nAnalysis: {analysis}\n\n")

@@ -7,6 +7,9 @@ from .main import (
     update_dream_analysis_and_image,
     search_dreams,
     delete_dream,
+    export_dreams_to_pdf,
+    export_dreams_to_txt,
+    export_dreams_to_json_file
 )
 
 __all__ = [
@@ -18,4 +21,7 @@ __all__ = [
     "update_dream_analysis_and_image",
     "search_dreams",
     "delete_dream",
+    "export_dreams_to_pdf",
+    "export_dreams_to_txt",
+    "export_dreams_to_json_file"
 ]

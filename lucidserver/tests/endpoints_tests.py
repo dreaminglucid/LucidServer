@@ -1,7 +1,7 @@
 import sys
 sys.path.append('.')
 
-from unittest.mock import patch
+from unittest.mock import patch, mock_open
 from app import app
 from lucidserver.endpoints.main import *
 import pytest
@@ -129,3 +129,27 @@ def test_delete_dream_endpoint(mock_get_dream, mock_extract_user_email_from_toke
     response = client.delete("/api/dreams/1", headers=headers)
     assert response.status_code == 200
     assert response.json["message"] == f"Dream with id 1 successfully deleted."
+    
+    
+# Test export dreams to PDF endpoint
+@patch("lucidserver.endpoints.main.extract_user_email_from_token", return_value=test_user_email)
+@patch("lucidserver.endpoints.main.export_dreams_to_pdf")
+@patch("builtins.open", new_callable=mock_open, read_data=b"Test PDF content")
+@patch("os.remove")
+def test_export_dreams_to_pdf_endpoint(mock_remove, mock_open_file, mock_export_dreams_to_pdf, mock_extract_user_email_from_token, client):
+    path = f"./dreams_{test_user_email}.pdf"
+    headers = {"Authorization": test_token}
+    response = client.get("/api/dreams/export/pdf", headers=headers)
+
+    # Verifying that the export_dreams_to_pdf function was called with the correct path
+    mock_export_dreams_to_pdf.assert_called_once_with(path=path)
+
+    # Verifying that the file was read
+    mock_open_file.assert_called_once_with(path, 'rb')
+
+    # Verifying that the file was deleted
+    mock_remove.assert_called_once_with(path)
+
+    assert response.status_code == 200
+    assert response.mimetype == "application/pdf"
+    assert response.headers["Content-Disposition"] == f"attachment; filename=dreams_{test_user_email}.pdf"

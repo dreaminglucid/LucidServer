@@ -1,5 +1,6 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 from functools import wraps
+import os
 import jwt
 import requests
 import json
@@ -13,7 +14,8 @@ from lucidserver.memories import (
     get_dream_analysis,
     get_dream_image,
     search_dreams,
-    delete_dream
+    delete_dream,
+    export_dreams_to_pdf
 )
 from lucidserver.actions import search_chat_with_dreams, regular_chat
 from agentlogger import log
@@ -234,3 +236,35 @@ def register_endpoints(app):
         
         log(f"Successfully deleted dream with id {dream_id}", type="info")
         return jsonify({"message": f"Dream with id {dream_id} successfully deleted."}), 200
+    
+    
+    @app.route("/api/dreams/export/pdf", methods=["GET"])
+    @handle_jwt_token
+    def export_dreams_to_pdf_endpoint(userEmail):
+        try:
+            path = f"./dreams_{userEmail}.pdf"
+            log(f"PDF path set to: {path}", type="info")
+            
+            log("Calling export_dreams_to_pdf function...", type="info")
+            export_dreams_to_pdf(path=path)  # Export dreams to PDF file
+            log("Dreams successfully exported to PDF.", type="success")
+
+            log("Reading PDF file into memory...", type="info")
+            with open(path, 'rb') as file:
+                pdf_data = file.read()
+            log("PDF file read into memory successfully.", type="success")
+
+            log("Preparing to send the PDF file as a response...", type="info")
+            response = Response(pdf_data, mimetype="application/pdf")
+            response.headers["Content-Disposition"] = f"attachment; filename=dreams_{userEmail}.pdf"
+            log("PDF file prepared for response.", type="info")
+
+            log(f"Deleting the PDF file from server: {path}", type="info")
+            os.remove(path)
+            log("PDF file deleted successfully.", type="success")
+
+            return response
+
+        except Exception as e:
+            log(f"Failed to export dreams to PDF: {str(e)}", type="error")
+            return jsonify({"error": "Failed to export dreams to PDF"}), 500

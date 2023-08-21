@@ -1,7 +1,11 @@
 import sys
 sys.path.append('.')
 
-from lucidserver.memories.main import create_dream, get_dream, get_dreams, get_dream_analysis, get_dream_image, update_dream_analysis_and_image, search_dreams, delete_dream
+import json
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+
+from lucidserver.memories.main import *
 
 
 # Mocking the create_memory function //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -482,3 +486,34 @@ def test_delete_dream_non_existing(monkeypatch):
 
     # Asserting that the result is False (non-existing dream)
     assert result == False, "Expected False for non-existing dream, but got True."
+    
+
+# export dreams functions tests ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+def test_export_memory_to_json(monkeypatch): 
+    # Assuming existing mock functions for get_client and get_memories
+    result = export_memory_to_json()
+    assert isinstance(result, dict), "Result should be a dictionary."
+    # Additional assertions based on your expected structure
+
+def test_export_dreams_to_json_file(tmp_path, monkeypatch):
+    # Assuming existing mock functions for export_memory_to_json
+    path = tmp_path / "dreams.json"
+    export_dreams_to_json_file(path=path)
+    with open(path) as file:
+        data = json.load(file)
+    assert isinstance(data, list), "JSON file should contain a list."
+    # Additional assertions based on your expected structure
+
+def test_export_dreams_to_pdf(tmp_path, monkeypatch):
+    # Assuming existing mock functions for export_memory_to_json
+    path = tmp_path / "dreams.pdf"
+    export_dreams_to_pdf(path=str(path)) # Convert the WindowsPath object to a string
+
+def test_export_dreams_to_txt(tmp_path, monkeypatch):
+    # Assuming existing mock functions for export_memory_to_json
+    path = tmp_path / "dreams.txt"
+    export_dreams_to_txt(path=path)
+    with open(path) as file:
+        content = file.read()
+    assert isinstance(content, str), "TXT file should contain a string."
+    # Additional assertions based on your expected structure
