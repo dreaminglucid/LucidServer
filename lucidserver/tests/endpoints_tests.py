@@ -118,3 +118,14 @@ def test_search_dreams_endpoint(mock_get_dream, mock_extract_user_email_from_tok
                            json={"query": "test_query"}, headers=headers)
     assert response.status_code == 200
     assert response.json[0]["id"] == 1
+    
+
+# Test delete dream endpoint
+@patch("lucidserver.endpoints.main.delete_dream", return_value=True)
+@patch("lucidserver.endpoints.main.extract_user_email_from_token", return_value=test_user_email)
+@patch("lucidserver.endpoints.main.get_dream", return_value=mocked_dream)
+def test_delete_dream_endpoint(mock_get_dream, mock_extract_user_email_from_token, mock_delete_dream, client):
+    headers = {"Authorization": test_token}
+    response = client.delete("/api/dreams/1", headers=headers)
+    assert response.status_code == 200
+    assert response.json["message"] == f"Dream with id 1 successfully deleted."

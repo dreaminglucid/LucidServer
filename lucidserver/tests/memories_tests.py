@@ -1,8 +1,7 @@
 import sys
 sys.path.append('.')
 
-from lucidserver.memories.main import create_dream, get_dream, get_dreams, get_dream_analysis, get_dream_image, update_dream_analysis_and_image, search_dreams
-from lucidserver.actions.main import generate_dream_analysis, generate_dream_image, get_image_summary
+from lucidserver.memories.main import create_dream, get_dream, get_dreams, get_dream_analysis, get_dream_image, update_dream_analysis_and_image, search_dreams, delete_dream
 
 
 # Mocking the create_memory function //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -10,7 +9,7 @@ def mock_create_memory(category, document, metadata=None):
     return "memory_id_12345"
 
 # Mocking the get_memory function
-def mock_get_memory(category, memory_id):
+def mock_get_memory(category, id):
     return {
         "id": "memory_id_12345",
         "document": "Dream Title\nDream Entry",
@@ -430,3 +429,56 @@ def test_search_dreams_filter_by_email(monkeypatch):
     assert result[0]['metadata']['date'] == "2022-08-08"
     assert result[0]['metadata']['entry'] == "Another Dream Entry"
     assert 'analysis' not in result[0]['metadata'], "Did not expect analysis field, but got one."
+    
+    
+# Mocking the delete_memory function to simulate a successful deletion //////////////////////////////////////////////////////////////////////////////////
+def mock_delete_memory_success(category, id):
+    return True
+
+# Mocking the delete_memory function to simulate a deletion failure
+def mock_delete_memory_failure(category, id):
+    return False
+
+# Testing the delete_dream function when the dream exists and is successfully deleted
+def test_delete_dream_existing_success(monkeypatch):
+    # Patching the dependent functions with mock functions
+    monkeypatch.setattr('lucidserver.memories.main.get_memory', mock_get_memory) # Assuming existing mock function
+    monkeypatch.setattr('lucidserver.memories.main.delete_memory', mock_delete_memory_success)
+
+    # Test input
+    dream_id = "memory_id_12345"
+
+    # Calling the delete_dream function
+    result = delete_dream(dream_id)
+
+    # Asserting that the deletion was successful
+    assert result == True, "Expected True for successful deletion, but got False."
+
+# Testing the delete_dream function when the dream exists but deletion fails
+def test_delete_dream_existing_failure(monkeypatch):
+    # Patching the dependent functions with mock functions
+    monkeypatch.setattr('lucidserver.memories.main.get_memory', mock_get_memory) # Assuming existing mock function
+    monkeypatch.setattr('lucidserver.memories.main.delete_memory', mock_delete_memory_failure)
+
+    # Test input
+    dream_id = "memory_id_12345"
+
+    # Calling the delete_dream function
+    result = delete_dream(dream_id)
+
+    # Asserting that the deletion failed
+    assert result == False, "Expected False for deletion failure, but got True."
+
+# Testing the delete_dream function when the dream does not exist
+def test_delete_dream_non_existing(monkeypatch):
+    # Patching the get_memory function with mock function to return None
+    monkeypatch.setattr('lucidserver.memories.main.get_memory', lambda category, id: None)
+
+    # Test input
+    dream_id = "non_existing_id"
+
+    # Calling the delete_dream function
+    result = delete_dream(dream_id)
+
+    # Asserting that the result is False (non-existing dream)
+    assert result == False, "Expected False for non-existing dream, but got True."

@@ -1,6 +1,6 @@
 import time
 from agentlogger import log
-from agentmemory import create_memory, get_memories, update_memory, get_memory, search_memory, delete_memory
+from agentmemory import create_memory, get_memories, update_memory, get_memory, search_memory, delete_memory, count_memories
 from lucidserver.actions import generate_dream_analysis, generate_dream_image, get_image_summary
 
 def create_dream(title, date, entry, userEmail):
@@ -15,7 +15,12 @@ def create_dream(title, date, entry, userEmail):
     Returns:
         dict: Newly created dream object.
     """
+    # Create a unique ID based on the total number of dreams
+    dream_count = count_memories("dreams")
+    unique_id = str(dream_count + 1)
+
     metadata = {
+        "id": unique_id,  # Include the unique ID in metadata
         "title": title,
         "date": date,
         "entry": entry,

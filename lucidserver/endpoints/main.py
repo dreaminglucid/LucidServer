@@ -19,6 +19,7 @@ from lucidserver.actions import search_chat_with_dreams, regular_chat
 from agentlogger import log
 import traceback
 
+
 def get_apple_public_key(kid):
     keys = requests.get("https://appleid.apple.com/auth/keys").json()["keys"]
     for key_dict in keys:
@@ -229,10 +230,7 @@ def register_endpoints(app):
             return jsonify({"error": "Unauthorized access."}), 401
 
         # Call the delete_dream function from your database module
-        result = delete_dream(dream_id)
-        if result:
-            log(f"Successfully deleted dream with id {dream_id}", type="info")
-            return jsonify({"message": f"Dream with id {dream_id} successfully deleted."}), 200
-        else:
-            log(f"Failed to delete dream with id {dream_id}", type="error")
-            return jsonify({"error": f"Failed to delete dream with id {dream_id}."}), 500
+        delete_dream(dream_id)
+        
+        log(f"Successfully deleted dream with id {dream_id}", type="info")
+        return jsonify({"message": f"Dream with id {dream_id} successfully deleted."}), 200
