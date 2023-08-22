@@ -1,5 +1,6 @@
 import time
 import json
+import uuid
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -7,7 +8,6 @@ from reportlab.lib.enums import TA_JUSTIFY
 from agentlogger import log
 from agentmemory import create_memory, get_memories, update_memory, get_memory, search_memory, delete_memory, count_memories, export_memory_to_file, export_memory_to_json, get_client
 from lucidserver.actions import generate_dream_analysis, generate_dream_image, get_image_summary
-
 
 def create_dream(title, date, entry, userEmail):
     """Create a new dream in the memory.
@@ -21,21 +21,22 @@ def create_dream(title, date, entry, userEmail):
     Returns:
         dict: Newly created dream object.
     """
+    
     # Create a unique ID based on the total number of dreams
-    dream_count = count_memories("dreams")
-    unique_id = str(dream_count + 1)
+    unique_id = str(uuid.uuid4())
 
     metadata = {
-        "id": unique_id,  # Include the unique ID in metadata
+        "id": unique_id,
         "title": title,
         "date": date,
         "entry": entry,
         "useremail": userEmail,
     }
     document = f"{title}\n{entry}"
-    memory_id = create_memory("dreams", document, metadata=metadata)
+    memory_id = create_memory("dreams", document, metadata=metadata, id=unique_id)  # Pass the unique_id here
     dream = get_memory("dreams", memory_id)
     return dream
+
 
 
 def get_dream(dream_id):

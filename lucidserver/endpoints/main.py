@@ -224,14 +224,18 @@ def register_endpoints(app):
     @app.route("/api/dreams/<string:dream_id>", methods=["DELETE"])
     @handle_jwt_token
     def delete_dream_endpoint(dream_id, userEmail):
-        # Check if the dream exists and belongs to the user
+        # Check if the dream exists
         dream = get_dream(dream_id)
-        if dream is None or dream["metadata"]["useremail"] != userEmail:
+        if dream is None:
+            return jsonify({"error": "Dream not found."}), 404
+
+        # Check if the dream belongs to the user
+        if dream["metadata"]["useremail"] != userEmail:
             log(
                 f"Unauthorized deletion attempt of dream with id {dream_id} by user {userEmail}.", type="error")
             return jsonify({"error": "Unauthorized access."}), 401
 
-        # Call the delete_dream function from your database module
+        # Call the delete_dream function
         delete_dream(dream_id)
         
         log(f"Successfully deleted dream with id {dream_id}", type="info")

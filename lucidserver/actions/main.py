@@ -82,15 +82,14 @@ def generate_dream_analysis(prompt, system_content):
 
 def generate_dream_image(dreams, dream_id, style="renaissance", quality="low"):
     try:
-        dream_id = int(dream_id)  # Convert dream_id to integer
         log(f"Debug: dream_id type: {type(dream_id)}, value: {dream_id}", type="info")
         log(f"Starting image generation for dream id: {dream_id}, style: {style}, quality: {quality}", type="info")
-        dream = next((d for d in dreams if int(d["id"]) == dream_id), None)  # Compare as integers
-        
+        dream = next((d for d in dreams if d["id"] == dream_id), None)  # Compare as strings
+
         if not dream:
             log(f"Dream with id {dream_id} not found in the provided dreams list.", type="warning")
             return None
-        
+
         log(f"Found dream with id: {dream_id}. Proceeding with image generation.", type="info")
         summary = get_image_summary(dream["metadata"]["entry"])
         log(f"Image summary obtained: {summary}", type="info")
@@ -104,16 +103,16 @@ def generate_dream_image(dreams, dream_id, style="renaissance", quality="low"):
             style_description = "A modern artwork of"
         else:
             style_description = "A renaissance painting of"  # default
-        
+
         log(f"Selected style description: {style_description}", type="info")
-            
+
         quality_resolution_map = {
             "low": "256x256",
             "medium": "512x512",
             "high": "1024x1024"
         }
         resolution = quality_resolution_map.get(quality, "256x256")
-        
+
         # Log the image quality and resolution
         log(f"Using image quality: {quality} with resolution: {resolution}", type="info")
 
@@ -125,7 +124,7 @@ def generate_dream_image(dreams, dream_id, style="renaissance", quality="low"):
             "n": 1,
             "size": resolution,
         }
-        
+
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {openai_api_key}",
