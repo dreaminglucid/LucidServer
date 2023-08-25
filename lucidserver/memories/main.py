@@ -26,17 +26,18 @@ def create_dream(title, date, entry, userEmail):
     unique_id = str(uuid.uuid4())
 
     metadata = {
-        "id": unique_id,
         "title": title,
         "date": date,
         "entry": entry,
         "useremail": userEmail,
     }
     document = f"{title}\n{entry}"
+    
+    # Call the create_memory function with the unique_id as the id parameter
     memory_id = create_memory("dreams", document, metadata=metadata, id=unique_id)  # Pass the unique_id here
+
     dream = get_memory("dreams", memory_id)
     return dream
-
 
 
 def get_dream(dream_id):
