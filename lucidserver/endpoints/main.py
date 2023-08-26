@@ -97,13 +97,21 @@ def register_endpoints(app):
     @use_args(dream_args)
     @handle_jwt_token
     def create_dream_endpoint(args, userEmail):
-        dream = create_dream(
-            args["title"], args["date"], args["entry"], userEmail)
-        if dream is None or "id" not in dream:
-            log(f"Dream creation failed with data {args}", type="error")
-            return jsonify({"error": "Dream creation failed"}), 500
-        log(f"Successfully created dream with data {dream}", type="info")
-        return jsonify(dream), 200
+        try:
+            dream = create_dream(
+                args["title"], args["date"], args["entry"], userEmail)
+            print("Debug: Created dream:", dream)  # Debug log
+
+            if dream is None or "id" not in dream:
+                log(f"Dream creation failed with data {args}", type="error")
+                return jsonify({"error": "Dream creation failed"}), 500
+
+            log(f"Successfully created dream with data {dream}", type="info")
+            return jsonify(dream), 200
+        except Exception as e:
+            log(
+                f"Unhandled exception occurred: {traceback.format_exc()}", type="error")
+            return jsonify({"error": "Internal server error"}), 500
 
     @app.route("/api/dreams/<string:dream_id>", methods=["PUT"])
     @use_args(update_dream_args)
