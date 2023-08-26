@@ -1,6 +1,6 @@
 import time
 import json
-import uuid
+from uuid import uuid4
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -11,21 +11,9 @@ from lucidserver.actions import generate_dream_analysis, generate_dream_image, g
 
 
 def create_dream(title, date, entry, userEmail):
-    """Create a new dream in the memory.
-
-    Args:
-        title (str): Title of the dream.
-        date (str): Date of the dream.
-        entry (str): Dream's description or content.
-        userEmail (str): Email of the user.
-
-    Returns:
-        dict: Newly created dream object.
-    """
     try:
         log(f"Entering create_dream function with title: {title}, date: {date}, entry: {entry}, userEmail: {userEmail}", type="debug")
 
-        # Creating metadata dictionary
         metadata = {
             "title": title,
             "date": date,
@@ -34,30 +22,39 @@ def create_dream(title, date, entry, userEmail):
         }
         log(f"Constructed metadata: {metadata}", type="debug")
 
-        # Creating a document for the dream
         document = f"{title}\n{entry}"
         log(f"Constructed document: {document}", type="debug")
 
-        # Creating a memory for the dream
-        memory_id = create_memory("dreams", document, metadata=metadata)
-        if not memory_id:
-            log("Memory ID not generated. Raising exception.", type="error")
-            raise Exception("Memory ID not generated")
+        # Explicitly generate a UUID here
+        generated_uuid = str(uuid4())
+        memory_id = create_memory("dreams", document, metadata=metadata, id=generated_uuid)
+
+        # Validate the memory ID before proceeding
+        if not memory_id or not isinstance(memory_id, str):
+            log("Invalid or missing Memory ID. Aborting...", type="error")
+            return None
+
         log(f"Generated memory ID: {memory_id}", type="info")
 
-        # Fetching the dream from memory
+        # Fetch the memory to validate it's saved correctly
         dream = get_memory("dreams", memory_id)
+        
         if not dream:
             log("Could not fetch dream from memory. Returning None.", type="error")
             return None
+
         log(f"Fetched dream from memory: {dream}", type="info")
+
+        # Additional check to validate that the fetched dream corresponds to the generated UUID
+        if dream.get("id", "") != generated_uuid:
+            log(f"Fetched dream ID does not match generated UUID. Fetched: {dream.get('id', '')}, Expected: {generated_uuid}", type="error")
+            return None
 
         return dream
 
     except Exception as e:
         log(f"Exception occurred in create_dream: {e}", type="error")
         return None
-
 
 def get_dream(dream_id):
     """Retrieve a specific dream by ID.
