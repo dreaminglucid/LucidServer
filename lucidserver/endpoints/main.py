@@ -101,6 +101,7 @@ def register_endpoints(app):
             args["title"], args["date"], args["entry"], userEmail)
         if dream is None or "id" not in dream:
             log(f"Dream creation failed with data {args}", type="error")
+            print(f"Debug: Created dream: {dream}")
             return jsonify({"error": "Dream creation failed"}), 500
         log(f"Successfully created dream with data {dream}", type="info")
         return jsonify(dream), 200
