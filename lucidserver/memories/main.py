@@ -1,6 +1,5 @@
 import time
 import json
-from uuid import uuid4
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -25,9 +24,8 @@ def create_dream(title, date, entry, userEmail):
         document = f"{title}\n{entry}"
         log(f"Constructed document: {document}", type="debug")
 
-        # Explicitly generate a UUID here
-        generated_uuid = str(uuid4())
-        memory_id = create_memory("dreams", document, metadata=metadata, id=generated_uuid)
+        # Call create_memory to store the dream and get its generated UUID
+        memory_id = create_memory("dreams", document, metadata=metadata)
 
         # Validate the memory ID before proceeding
         if not memory_id or not isinstance(memory_id, str):
@@ -46,8 +44,8 @@ def create_dream(title, date, entry, userEmail):
         log(f"Fetched dream from memory: {dream}", type="info")
 
         # Additional check to validate that the fetched dream corresponds to the generated UUID
-        if dream.get("id", "") != generated_uuid:
-            log(f"Fetched dream ID does not match generated UUID. Fetched: {dream.get('id', '')}, Expected: {generated_uuid}", type="error")
+        if dream.get("id", "") != memory_id:
+            log(f"Fetched dream ID does not match generated UUID. Fetched: {dream.get('id', '')}, Expected: {memory_id}", type="error")
             return None
 
         return dream
