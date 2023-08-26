@@ -66,7 +66,7 @@ The Lucid Journal backend server provides several endpoints to interact with dre
 - **POST /api/chat**: Have interactive conversations with the AI dream guide.
 - **POST /api/dreams/search**: Search for dream entries based on keywords.
 - **POST /api/dreams/search-chat**: Have AI-guided conversations with the AI dream guide and relevant dream entries found in the database.
-- more to be added
+- more to be added soon
 
 ### Running the API
 To start the API server, execute the following command:
