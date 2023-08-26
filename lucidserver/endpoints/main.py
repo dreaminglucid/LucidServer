@@ -95,16 +95,19 @@ def register_endpoints(app):
 
     @app.route("/api/dreams", methods=["POST"], endpoint='create_dream_endpoint')
     @use_args(dream_args)
-    @handle_jwt_token
-    def create_dream_endpoint(args, userEmail):
+    def create_dream_endpoint(args):
         try:
+            # Extract id_token from args and decode it to get userEmail
+            id_token = args.get("id_token")
+            userEmail = extract_user_email_from_token(id_token)
+
             # Debug Log
             log(f"Received args: {args}", type="debug")
             log(f"Received userEmail: {userEmail}", type="debug")
 
             # Create dream and check for errors
             dream = create_dream(args["title"], args["date"], args["entry"], userEmail)
-            
+
             log(f"Debug: Created dream: {dream}", type="debug")
 
             if dream is None or "id" not in dream:
@@ -118,7 +121,7 @@ def register_endpoints(app):
             # Exception Handling
             log(f"Exception occurred: {e}", type="error")
             return jsonify({"error": "Internal Server Error"}), 500
-
+        
 
     @app.route("/api/dreams/<string:dream_id>", methods=["PUT"])
     @use_args(update_dream_args)
