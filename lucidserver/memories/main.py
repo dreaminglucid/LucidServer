@@ -22,21 +22,41 @@ def create_dream(title, date, entry, userEmail):
     Returns:
         dict: Newly created dream object.
     """
-    metadata = {
-        "title": title,
-        "date": date,
-        "entry": entry,
-        "useremail": userEmail,
-    }
-    document = f"{title}\n{entry}"
-    memory_id = create_memory("dreams", document, metadata=metadata)
-    dream = get_memory("dreams", memory_id)
-    # Debugging lines to print out input arguments
-    print(f"Debug: Received title: {title}")
-    print(f"Debug: Received date: {date}")
-    print(f"Debug: Received entry: {entry}")
-    print(f"Debug: Received userEmail: {userEmail}")
-    return dream
+    try:
+        log(f"Entering create_dream function with title: {title}, date: {date}, entry: {entry}, userEmail: {userEmail}", type="debug")
+
+        # Creating metadata dictionary
+        metadata = {
+            "title": title,
+            "date": date,
+            "entry": entry,
+            "useremail": userEmail,
+        }
+        log(f"Constructed metadata: {metadata}", type="debug")
+
+        # Creating a document for the dream
+        document = f"{title}\n{entry}"
+        log(f"Constructed document: {document}", type="debug")
+
+        # Creating a memory for the dream
+        memory_id = create_memory("dreams", document, metadata=metadata)
+        if not memory_id:
+            log("Memory ID not generated. Raising exception.", type="error")
+            raise Exception("Memory ID not generated")
+        log(f"Generated memory ID: {memory_id}", type="info")
+
+        # Fetching the dream from memory
+        dream = get_memory("dreams", memory_id)
+        if not dream:
+            log("Could not fetch dream from memory. Returning None.", type="error")
+            return None
+        log(f"Fetched dream from memory: {dream}", type="info")
+
+        return dream
+
+    except Exception as e:
+        log(f"Exception occurred in create_dream: {e}", type="error")
+        return None
 
 
 def get_dream(dream_id):
