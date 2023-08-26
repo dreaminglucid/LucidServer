@@ -22,7 +22,6 @@ Lucid Server utilizes several agent-centric Python packages developed by the [Au
 - [easycompletion](https://github.com/AutonomousResearchGroup/easycompletion): Streamlined OpenAI functions and validation.
 - [agentlogger](https://github.com/AutonomousResearchGroup/agentlogger): Simple and visually appealing logs for agents.
 
-
 ### Local Setup
 To set up the Lucid Journal backend server locally, follow these steps:
 
