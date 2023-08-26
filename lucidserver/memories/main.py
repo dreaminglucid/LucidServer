@@ -6,7 +6,7 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_JUSTIFY
 from agentlogger import log
-from agentmemory import create_memory, get_memories, update_memory, get_memory, search_memory, delete_memory, count_memories, export_memory_to_file, export_memory_to_json, get_client
+from agentmemory import create_memory, get_memories, update_memory, get_memory, search_memory, delete_memory, export_memory_to_json, get_client
 from lucidserver.actions import generate_dream_analysis, generate_dream_image, get_image_summary
 
 
@@ -31,6 +31,11 @@ def create_dream(title, date, entry, userEmail):
     document = f"{title}\n{entry}"
     memory_id = create_memory("dreams", document, metadata=metadata)
     dream = get_memory("dreams", memory_id)
+    # Debugging lines to print out input arguments
+    print(f"Debug: Received title: {title}")
+    print(f"Debug: Received date: {date}")
+    print(f"Debug: Received entry: {entry}")
+    print(f"Debug: Received userEmail: {userEmail}")
     return dream
 
 
