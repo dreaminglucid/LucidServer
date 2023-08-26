@@ -93,25 +93,20 @@ def register_endpoints(app):
     # Placeholder for user's image style preferences
     user_style_preferences = {}
 
-    @app.route("/api/dreams", methods=["POST"], endpoint='create_dream_endpoint')
+    @app.route("/api/dreams", methods=["POST"])
     @use_args(dream_args)
     @handle_jwt_token
     def create_dream_endpoint(args, userEmail):
         try:
-            dream = create_dream(
-                args["title"], args["date"], args["entry"], userEmail)
-            print("Debug: Created dream:", dream)  # Debug log
-
+            dream = create_dream(args["title"], args["date"], args["entry"], userEmail)
             if dream is None or "id" not in dream:
                 log(f"Dream creation failed with data {args}", type="error")
                 return jsonify({"error": "Dream creation failed"}), 500
-
             log(f"Successfully created dream with data {dream}", type="info")
             return jsonify(dream), 200
         except Exception as e:
-            log(
-                f"Unhandled exception occurred: {traceback.format_exc()}", type="error")
-            return jsonify({"error": "Internal server error"}), 500
+            log(f"Exception: {e}", type="error")
+            return jsonify({"error": "Internal Server Error"}), 500
 
     @app.route("/api/dreams/<string:dream_id>", methods=["PUT"])
     @use_args(update_dream_args)

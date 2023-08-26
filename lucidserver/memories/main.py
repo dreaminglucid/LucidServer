@@ -9,6 +9,7 @@ from agentlogger import log
 from agentmemory import create_memory, get_memories, update_memory, get_memory, search_memory, delete_memory, count_memories, export_memory_to_file, export_memory_to_json, get_client
 from lucidserver.actions import generate_dream_analysis, generate_dream_image, get_image_summary
 
+
 def create_dream(title, date, entry, userEmail):
     """Create a new dream in the memory.
 
@@ -21,23 +22,23 @@ def create_dream(title, date, entry, userEmail):
     Returns:
         dict: Newly created dream object.
     """
-    
-    # Create a unique ID based on the total number of dreams
-    unique_id = str(uuid.uuid4())
+    try:
+        metadata = {
+            "title": title,
+            "date": date,
+            "entry": entry,
+            "useremail": userEmail,
+        }
+        document = f"{title}\n{entry}"
 
-    metadata = {
-        "title": title,
-        "date": date,
-        "entry": entry,
-        "useremail": userEmail,
-    }
-    document = f"{title}\n{entry}"
-    
-    # Call the create_memory function with the unique_id as the id parameter
-    memory_id = create_memory("dreams", document, metadata=metadata, id=unique_id)  # Pass the unique_id here
+        # Omitting unique_id, letting PostgreSQL handle it
+        memory_id = create_memory("dreams", document, metadata=metadata)
 
-    dream = get_memory("dreams", memory_id)
-    return dream
+        dream = get_memory("dreams", memory_id)
+        return dream
+    except Exception as e:
+        log(f"Exception: {e}", type="error")
+        return None
 
 
 def get_dream(dream_id):
@@ -326,7 +327,8 @@ def export_dreams_to_pdf(path="./dreams.pdf"):
     dreams = [dream for dream in dreams if not (
         dream.get('metadata', {}).get('title', '') == 'Dream Title' and
         dream.get('metadata', {}).get('entry', '') == 'Dream Entry' and
-        dream.get('metadata', {}).get('analysis', 'No analysis available.') == 'No analysis available.'
+        dream.get('metadata', {}).get(
+            'analysis', 'No analysis available.') == 'No analysis available.'
     )]
 
     # Set up the PDF document
