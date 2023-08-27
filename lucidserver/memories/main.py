@@ -347,14 +347,10 @@ def export_dreams_to_pdf(path="./dreams.pdf", userEmail=None):
     collections_dict = export_memory_to_json(include_embeddings=False, userEmail=userEmail)
     dreams = collections_dict.get('dreams', [])
     
-    # Filter the dreams based on userEmail and specific title, entry, and analysis
+    # Filter the dreams based on userEmail. userEmail is only used here for filtering.
     filtered_dreams = [
         dream for dream in dreams 
-        if dream.get('metadata', {}).get('useremail') == userEmail and not (
-            dream.get('metadata', {}).get('title', '') == 'Dream Title' and
-            dream.get('metadata', {}).get('entry', '') == 'Dream Entry' and
-            dream.get('metadata', {}).get('analysis', 'No analysis available.') == 'No analysis available.'
-        )
+        if dream.get('metadata', {}).get('useremail') == userEmail
     ]
 
     # Set up the PDF document
@@ -368,18 +364,19 @@ def export_dreams_to_pdf(path="./dreams.pdf", userEmail=None):
     entry_style = styles['BodyText']
     analysis_style = styles['Justify']
 
-    for dream in filtered_dreams:
+    # Here, filtered_dreams is used to populate the PDF content.
+    for dream in filtered_dreams:  
         title = dream['metadata']['title']
         entry = dream['metadata']['entry']
-        analysis = dream['metadata'].get('analysis', 'No analysis available.')  # Get analysis if available
-
+        analysis = dream['metadata'].get('analysis', 'No analysis available.')
+        
         # Add title, entry, and analysis to PDF as paragraphs
         Story.append(Paragraph(f"<strong>Title:</strong> {title}", title_style))
         Story.append(Spacer(1, 12))
         Story.append(Paragraph(f"<strong>Entry:</strong> {entry}", entry_style))
         Story.append(Spacer(1, 12))
         Story.append(Paragraph(f"<strong>Analysis:</strong> {analysis}", analysis_style))
-        Story.append(Spacer(1, 24))  # Add some spacing between dreams
+        Story.append(Spacer(1, 24))
 
     # Build the PDF with the content
     doc.build(Story)
