@@ -344,16 +344,10 @@ def export_dreams_to_json_file(path="./dreams.json", userEmail=None):
         json.dump(dreams, outfile)
 
 def export_dreams_to_pdf(path="./dreams.pdf", userEmail=None):
-    collections_dict = export_memory_to_json(include_embeddings=False, userEmail=userEmail)
-    dreams = collections_dict.get('dreams', [])
+    # Use get_dreams to fetch dreams for the given userEmail
+    dreams = get_dreams(userEmail)
     
-    # Filter the dreams based on userEmail. userEmail is only used here for filtering.
-    filtered_dreams = [
-        dream for dream in dreams 
-        if dream.get('metadata', {}).get('useremail') == userEmail
-    ]
-
-    # Set up the PDF document
+    # Initialize PDF document and story
     doc = SimpleDocTemplate(path, pagesize=letter)
     Story = []
 
@@ -364,8 +358,8 @@ def export_dreams_to_pdf(path="./dreams.pdf", userEmail=None):
     entry_style = styles['BodyText']
     analysis_style = styles['Justify']
 
-    # Here, filtered_dreams is used to populate the PDF content.
-    for dream in filtered_dreams:  
+    # Populate the PDF content
+    for dream in dreams:
         title = dream['metadata']['title']
         entry = dream['metadata']['entry']
         analysis = dream['metadata'].get('analysis', 'No analysis available.')
@@ -378,7 +372,7 @@ def export_dreams_to_pdf(path="./dreams.pdf", userEmail=None):
         Story.append(Paragraph(f"<strong>Analysis:</strong> {analysis}", analysis_style))
         Story.append(Spacer(1, 24))
 
-    # Build the PDF with the content
+    # Build the PDF
     doc.build(Story)
 
 def export_dreams_to_txt(path="./dreams.txt", userEmail=None):

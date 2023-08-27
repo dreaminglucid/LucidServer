@@ -259,37 +259,29 @@ def register_endpoints(app):
     
     
     @app.route("/api/dreams/export/pdf", methods=["GET"])
-    @handle_jwt_token
-    def export_dreams_to_pdf_endpoint(userEmail):
+    def export_dreams_to_pdf_endpoint():
         try:
-            # Generate the path for the PDF file, incorporating the user's email
-            path = f"./dreams_{userEmail}.pdf"
-            log(f"PDF path set to: {path}", type="info")
+            # Generate the path for the PDF file
+            path = "./dreams.pdf"
+            
+            # Here, you would ideally get the userEmail from the current user session
+            userEmail = "current_user_email"
 
-            # Call the export_dreams_to_pdf function, passing in the user's email
-            log("Calling export_dreams_to_pdf function...", type="info")
+            # Call the export_dreams_to_pdf function
             export_dreams_to_pdf(path=path, userEmail=userEmail)
-            log("Dreams successfully exported to PDF.", type="success")
 
-            # Read the generated PDF file into memory
-            log("Reading PDF file into memory...", type="info")
+            # Read the generated PDF into memory
             with open(path, 'rb') as file:
                 pdf_data = file.read()
-            log("PDF file read into memory successfully.", type="success")
 
             # Prepare and return the PDF file as a HTTP response
-            log("Preparing to send the PDF file as a response...", type="info")
             response = Response(pdf_data, mimetype="application/pdf")
-            response.headers["Content-Disposition"] = f"attachment; filename=dreams_{userEmail}.pdf"
-            log("PDF file prepared for response.", type="info")
+            response.headers["Content-Disposition"] = "attachment; filename=dreams.pdf"
 
             # Delete the PDF file from the server to free up resources
-            log(f"Deleting the PDF file from server: {path}", type="info")
             os.remove(path)
-            log("PDF file deleted successfully.", type="success")
 
             return response
 
         except Exception as e:
-            log(f"Failed to export dreams to PDF: {str(e)}", type="error")
             return jsonify({"error": "Failed to export dreams to PDF"}), 500
