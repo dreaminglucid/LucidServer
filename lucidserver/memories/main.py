@@ -11,38 +11,54 @@ from lucidserver.actions import generate_dream_analysis, generate_dream_image, g
 
 def create_dream(title, date, entry, userEmail):
     try:
-        log(
-            f"Entering create_dream function with title: {title}, date: {date}, entry: {entry}, userEmail: {userEmail}", type="debug")
+        # Step 1: Initial log to confirm function entry
+        log(f"Entering create_dream function with title: {title}, date: {date}, entry: {entry}, userEmail: {userEmail}", type="debug")
 
-        metadata = {"title": title, "date": date,
-                    "entry": entry, "useremail": userEmail}
+        # Construct metadata
+        metadata = {
+            "title": title,
+            "date": date,
+            "entry": entry,
+            "useremail": userEmail,
+        }
+        # Log the constructed metadata
         log(f"Constructed metadata: {metadata}", type="debug")
 
+        # Construct document
         document = f"{title}\n{entry}"
+        # Log the constructed document
         log(f"Constructed document: {document}", type="debug")
 
+        # Call create_memory to store the dream and get its generated UUID
         memory_id = create_memory("dreams", document, metadata=metadata)
+        
+        # Step 2: Log the returned UUID directly
+        log(f"Returned memory_id from create_memory: {memory_id}", type="debug")
 
-        if memory_id is None:
-            raise ValueError("Memory ID is None")
-
-        if not isinstance(memory_id, str):
-            raise TypeError(
-                f"Memory ID is not a string but a {type(memory_id)}")
+        # Step 3: Validate the memory ID before proceeding
+        if not memory_id or not isinstance(memory_id, str):
+            # Log the type of the returned memory_id for debugging
+            log(f"Invalid or missing Memory ID: {memory_id}. Type: {type(memory_id)}. Aborting...", type="error")
+            return None
 
         log(f"Generated memory ID: {memory_id}", type="info")
 
+        # Step 4: Fetch the memory to validate it's saved correctly
         dream = get_memory("dreams", memory_id)
+        
+        if not dream:
+            log("Could not fetch dream from memory. Returning None.", type="error")
+            return None
 
-        if dream is None:
-            raise LookupError("Dream could not be fetched from memory")
-
+        # Log the fetched dream
         log(f"Fetched dream from memory: {dream}", type="info")
 
+        # Additional check to validate that the fetched dream corresponds to the generated UUID
         if dream.get("id", "") != memory_id:
-            raise ValueError(
-                f"Fetched dream ID does not match generated UUID. Fetched: {dream.get('id', '')}, Expected: {memory_id}")
+            log(f"Fetched dream ID does not match generated UUID. Fetched: {dream.get('id', '')}, Expected: {memory_id}", type="error")
+            return None
 
+        # Step 5: Return a dictionary containing both the dream and the generated UUID
         return {"id": memory_id, "dream": dream}
 
     except Exception as e:
