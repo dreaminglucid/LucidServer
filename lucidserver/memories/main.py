@@ -350,7 +350,7 @@ def export_dreams_to_pdf(path="./dreams.pdf", userEmail=None):
     # Filter the dreams based on userEmail and specific title, entry, and analysis
     filtered_dreams = [
         dream for dream in dreams 
-        if dream.get('metadata', {}).get('userEmail') == userEmail and not (
+        if dream.get('metadata', {}).get('useremail') == userEmail and not (
             dream.get('metadata', {}).get('title', '') == 'Dream Title' and
             dream.get('metadata', {}).get('entry', '') == 'Dream Entry' and
             dream.get('metadata', {}).get('analysis', 'No analysis available.') == 'No analysis available.'
@@ -368,7 +368,7 @@ def export_dreams_to_pdf(path="./dreams.pdf", userEmail=None):
     entry_style = styles['BodyText']
     analysis_style = styles['Justify']
 
-    for dream in filtered_dreams:  # <-- Using filtered_dreams here
+    for dream in filtered_dreams:
         title = dream['metadata']['title']
         entry = dream['metadata']['entry']
         analysis = dream['metadata'].get('analysis', 'No analysis available.')  # Get analysis if available
