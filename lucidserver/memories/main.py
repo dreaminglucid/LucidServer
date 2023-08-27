@@ -1,7 +1,7 @@
 import time
 import json
 from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_JUSTIFY
 from agentlogger import log
@@ -374,6 +374,14 @@ def export_dreams_to_pdf(path="./dreams.pdf", userEmail=None):
         Story.append(Paragraph(f"<strong>Entry:</strong> {entry}", entry_style))
         Story.append(Spacer(1, 12))
         Story.append(Paragraph(f"<strong>Analysis:</strong> {analysis}", analysis_style))
+        
+        # Add image if available
+        image_path = metadata.get('image', None)
+        if image_path:
+            Story.append(Spacer(1, 12))
+            Story.append(Image(image_path, 200, 200))  # Image width and height
+            Story.append(Spacer(1, 12))
+
         Story.append(Spacer(1, 24))
 
     # Build the PDF
