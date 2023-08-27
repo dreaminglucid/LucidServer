@@ -1,11 +1,9 @@
 import time
 import json
 from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_JUSTIFY
-import base64
-from io import BytesIO
 from agentlogger import log
 from agentmemory import create_memory, get_memories, update_memory, get_memory, search_memory, delete_memory, export_memory_to_json, get_client
 from lucidserver.actions import generate_dream_analysis, generate_dream_image, get_image_summary
@@ -376,20 +374,7 @@ def export_dreams_to_pdf(path="./dreams.pdf", userEmail=None):
         Story.append(Paragraph(f"<strong>Entry:</strong> {entry}", entry_style))
         Story.append(Spacer(1, 12))
         Story.append(Paragraph(f"<strong>Analysis:</strong> {analysis}", analysis_style))
-
-    # Add image if available
-    image_base64 = dream.get('image', None)  # Assume the image is Base64 encoded
-    if image_base64:
-        Story.append(Spacer(1, 12))
-        
-        # Decode the Base64 image
-        image_data = base64.b64decode(image_base64)
-        image = Image(BytesIO(image_data), 200, 200)  # Image width and height
-
-        Story.append(image)
-        Story.append(Spacer(1, 12))
-
-    Story.append(Spacer(1, 24))
+        Story.append(Spacer(1, 24))
 
     # Build the PDF
     doc.build(Story)
