@@ -343,13 +343,6 @@ def export_dreams_to_json_file(path="./dreams.json", userEmail=None):
     with open(path, "w") as outfile:
         json.dump(dreams, outfile)
 
-
-from reportlab.lib.pagesizes import letter
-from reportlab.lib import colors
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.enums import TA_JUSTIFY
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-
 def export_dreams_to_pdf(path="./dreams.pdf", userEmail=None):
     collections_dict = export_memory_to_json(include_embeddings=False, userEmail=userEmail)
     dreams = collections_dict.get('dreams', [])
