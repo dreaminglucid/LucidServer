@@ -214,6 +214,16 @@ def get_dream_image(dream_id, style="renaissance", quality="low", max_retries=5)
 
 
 def update_dream_analysis_and_image(dream_id, analysis=None, image=None):
+    """Update the analysis and image for a dream.
+
+    Args:
+        dream_id (str): ID of the dream.
+        analysis (str, optional): New analysis. Defaults to None.
+        image (str, optional): New image. Defaults to None.
+
+    Returns:
+        dict: Updated dream object or None if not found.
+    """
     log(
         f"Initiating update for dream analysis and image for dream id {dream_id}.", type="info")
 
