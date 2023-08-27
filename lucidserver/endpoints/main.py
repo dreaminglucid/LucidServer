@@ -285,7 +285,7 @@ def register_endpoints(app):
 
             # Delete the PDF file from the server to free up resources
             log(f"Deleting the PDF file from server: {path}", type="info")
-            # os.remove(path)
+            os.remove(path)
             log("PDF file deleted successfully.", type="success")
 
             return response

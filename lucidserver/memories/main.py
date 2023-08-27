@@ -336,7 +336,6 @@ def export_memory_to_json(include_embeddings=True, userEmail=None):
                 collections_dict[collection_name].append(memory)
     return collections_dict
 
-
 def export_dreams_to_json_file(path="./dreams.json", userEmail=None):
     collections_dict = export_memory_to_json(include_embeddings=False, userEmail=userEmail)
     dreams = collections_dict.get('dreams', [])
@@ -346,15 +345,10 @@ def export_dreams_to_json_file(path="./dreams.json", userEmail=None):
 def export_dreams_to_pdf(path="./dreams.pdf", userEmail=None):
     collections_dict = export_memory_to_json(include_embeddings=False, userEmail=userEmail)
     dreams = collections_dict.get('dreams', [])
-
-    # Filter out dreams with specific title, entry, and analysis
-    dreams = [dream for dream in dreams if not (
-        dream.get('metadata', {}).get('title', '') == 'Dream Title' and
-        dream.get('metadata', {}).get('entry', '') == 'Dream Entry' and
-        dream.get('metadata', {}).get(
-            'analysis', 'No analysis available.') == 'No analysis available.'
-    )]
-
+    
+    # Filter the dreams based on userEmail
+    filtered_dreams = [dream for dream in dreams if dream.get('metadata', {}).get('userEmail') == userEmail]
+    
     # Set up the PDF document
     doc = SimpleDocTemplate(path, pagesize=letter)
     Story = []
@@ -366,26 +360,21 @@ def export_dreams_to_pdf(path="./dreams.pdf", userEmail=None):
     entry_style = styles['BodyText']
     analysis_style = styles['Justify']
 
-    for dream in dreams:
+    for dream in filtered_dreams:  # <-- Use filtered_dreams here
         title = dream['metadata']['title']
         entry = dream['metadata']['entry']
-        analysis = dream['metadata'].get(
-            'analysis', 'No analysis available.')  # Get analysis if available
+        analysis = dream['metadata'].get('analysis', 'No analysis available.')  # Get analysis if available
 
         # Add title, entry, and analysis to PDF as paragraphs
-        Story.append(
-            Paragraph(f"<strong>Title:</strong> {title}", title_style))
+        Story.append(Paragraph(f"<strong>Title:</strong> {title}", title_style))
         Story.append(Spacer(1, 12))
-        Story.append(
-            Paragraph(f"<strong>Entry:</strong> {entry}", entry_style))
+        Story.append(Paragraph(f"<strong>Entry:</strong> {entry}", entry_style))
         Story.append(Spacer(1, 12))
-        Story.append(
-            Paragraph(f"<strong>Analysis:</strong> {analysis}", analysis_style))
+        Story.append(Paragraph(f"<strong>Analysis:</strong> {analysis}", analysis_style))
         Story.append(Spacer(1, 24))  # Add some spacing between dreams
 
     # Build the PDF with the content
     doc.build(Story)
-
 
 def export_dreams_to_txt(path="./dreams.txt", userEmail=None):
     collections_dict = export_memory_to_json(include_embeddings=False, userEmail=userEmail)
