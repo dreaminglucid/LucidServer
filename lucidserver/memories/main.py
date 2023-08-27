@@ -13,6 +13,7 @@ def create_dream(title, date, entry, userEmail):
     try:
         log(f"Entering create_dream function with title: {title}, date: {date}, entry: {entry}, userEmail: {userEmail}", type="debug")
 
+        # Construct metadata
         metadata = {
             "title": title,
             "date": date,
@@ -21,6 +22,7 @@ def create_dream(title, date, entry, userEmail):
         }
         log(f"Constructed metadata: {metadata}", type="debug")
 
+        # Construct document
         document = f"{title}\n{entry}"
         log(f"Constructed document: {document}", type="debug")
 
@@ -48,11 +50,13 @@ def create_dream(title, date, entry, userEmail):
             log(f"Fetched dream ID does not match generated UUID. Fetched: {dream.get('id', '')}, Expected: {memory_id}", type="error")
             return None
 
-        return dream
+        # Return a dictionary containing both the dream and the generated UUID
+        return {"id": memory_id, "dream": dream}
 
     except Exception as e:
         log(f"Exception occurred in create_dream: {e}", type="error")
         return None
+
 
 def get_dream(dream_id):
     """Retrieve a specific dream by ID.
