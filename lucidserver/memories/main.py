@@ -29,7 +29,7 @@ def create_dream(title, date, entry, userEmail):
 
         # Validate the memory ID before proceeding
         if not memory_id or not isinstance(memory_id, str):
-            log("Invalid or missing Memory ID. Aborting...", type="error")
+            log(f"Invalid or missing Memory ID: {memory_id}. Type: {type(memory_id)}. Aborting...", type="error")
             return None
 
         log(f"Generated memory ID: {memory_id}", type="info")
