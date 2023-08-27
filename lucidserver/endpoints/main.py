@@ -262,23 +262,28 @@ def register_endpoints(app):
     @handle_jwt_token
     def export_dreams_to_pdf_endpoint(userEmail):
         try:
+            # Generate the path for the PDF file, incorporating the user's email
             path = f"./dreams_{userEmail}.pdf"
             log(f"PDF path set to: {path}", type="info")
-            
+
+            # Call the export_dreams_to_pdf function, passing in the user's email
             log("Calling export_dreams_to_pdf function...", type="info")
-            export_dreams_to_pdf(path=path)  # Export dreams to PDF file
+            export_dreams_to_pdf(path=path, userEmail=userEmail)
             log("Dreams successfully exported to PDF.", type="success")
 
+            # Read the generated PDF file into memory
             log("Reading PDF file into memory...", type="info")
             with open(path, 'rb') as file:
                 pdf_data = file.read()
             log("PDF file read into memory successfully.", type="success")
 
+            # Prepare and return the PDF file as a HTTP response
             log("Preparing to send the PDF file as a response...", type="info")
             response = Response(pdf_data, mimetype="application/pdf")
             response.headers["Content-Disposition"] = f"attachment; filename=dreams_{userEmail}.pdf"
             log("PDF file prepared for response.", type="info")
 
+            # Delete the PDF file from the server to free up resources
             log(f"Deleting the PDF file from server: {path}", type="info")
             os.remove(path)
             log("PDF file deleted successfully.", type="success")

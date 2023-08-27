@@ -323,7 +323,7 @@ def delete_dream(id):
         return False
 
 
-def export_memory_to_json(include_embeddings=True):
+def export_memory_to_json(include_embeddings=True, userEmail=None):
     collections = get_client().list_collections()
     collections_dict = {}
     for collection in collections:
@@ -332,19 +332,26 @@ def export_memory_to_json(include_embeddings=True):
         memories = get_memories(
             collection_name, include_embeddings=include_embeddings)
         for memory in memories:
-            collections_dict[collection_name].append(memory)
+            if userEmail is None or memory.get('metadata', {}).get('userEmail') == userEmail:
+                collections_dict[collection_name].append(memory)
     return collections_dict
 
 
-def export_dreams_to_json_file(path="./dreams.json"):
-    collections_dict = export_memory_to_json(include_embeddings=False)
+def export_dreams_to_json_file(path="./dreams.json", userEmail=None):
+    collections_dict = export_memory_to_json(include_embeddings=False, userEmail=userEmail)
     dreams = collections_dict.get('dreams', [])
     with open(path, "w") as outfile:
         json.dump(dreams, outfile)
 
 
-def export_dreams_to_pdf(path="./dreams.pdf"):
-    collections_dict = export_memory_to_json(include_embeddings=False)
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_JUSTIFY
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+
+def export_dreams_to_pdf(path="./dreams.pdf", userEmail=None):
+    collections_dict = export_memory_to_json(include_embeddings=False, userEmail=userEmail)
     dreams = collections_dict.get('dreams', [])
 
     # Filter out dreams with specific title, entry, and analysis
@@ -387,8 +394,8 @@ def export_dreams_to_pdf(path="./dreams.pdf"):
     doc.build(Story)
 
 
-def export_dreams_to_txt(path="./dreams.txt"):
-    collections_dict = export_memory_to_json(include_embeddings=False)
+def export_dreams_to_txt(path="./dreams.txt", userEmail=None):
+    collections_dict = export_memory_to_json(include_embeddings=False, userEmail=userEmail)
     dreams = collections_dict.get('dreams', [])
     with open(path, "w") as txtfile:
         for dream in dreams:
