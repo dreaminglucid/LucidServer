@@ -346,8 +346,7 @@ def export_dreams_to_json_file(path="./dreams.json", userEmail=None):
 def export_dreams_to_pdf(path="./dreams.pdf", userEmail=None):
     # Use get_dreams to fetch dreams for the given userEmail
     dreams = get_dreams(userEmail)
-    log(f"Debug: Retrieved dreams: {dreams}", type="debug")  # Debugging line
-
+    
     # Initialize PDF document and story
     doc = SimpleDocTemplate(path, pagesize=letter)
     Story = []
@@ -364,12 +363,13 @@ def export_dreams_to_pdf(path="./dreams.pdf", userEmail=None):
         metadata = dream.get('metadata', {})
         title = metadata.get('title', 'No title available.')
         entry = metadata.get('entry', 'No entry available.')
-        analysis = metadata.get('analysis', 'No analysis available.')
+        date = metadata.get('date', 'No date available.')  # Inside metadata
+        analysis = dream.get('analysis', 'No analysis available.')  # Outside metadata
 
-        log(f"Debug: Processing dream with metadata: {metadata}", type="debug")  # Debugging line
-
-        # Add title, entry, and analysis to PDF as paragraphs
+        # Add title, entry, date, and analysis to PDF as paragraphs
         Story.append(Paragraph(f"<strong>Title:</strong> {title}", title_style))
+        Story.append(Spacer(1, 12))
+        Story.append(Paragraph(f"<strong>Date:</strong> {date}", title_style))
         Story.append(Spacer(1, 12))
         Story.append(Paragraph(f"<strong>Entry:</strong> {entry}", entry_style))
         Story.append(Spacer(1, 12))
