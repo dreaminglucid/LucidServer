@@ -259,13 +259,11 @@ def register_endpoints(app):
     
     
     @app.route("/api/dreams/export/pdf", methods=["GET"])
-    def export_dreams_to_pdf_endpoint():
+    @handle_jwt_token
+    def export_dreams_to_pdf_endpoint(userEmail):
         try:
             # Generate the path for the PDF file
             path = "./dreams.pdf"
-            
-            # Here, you would ideally get the userEmail from the current user session
-            userEmail = "current_user_email"
 
             # Call the export_dreams_to_pdf function
             export_dreams_to_pdf(path=path, userEmail=userEmail)
@@ -284,4 +282,5 @@ def register_endpoints(app):
             return response
 
         except Exception as e:
+            log(f"Failed to export dreams to PDF. Error: {e}", type="error")
             return jsonify({"error": "Failed to export dreams to PDF"}), 500
