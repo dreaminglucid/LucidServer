@@ -374,9 +374,9 @@ def export_dreams_to_pdf(path="./dreams.pdf", userEmail=None):
         Story.append(Paragraph(f"<strong>Entry:</strong> {entry}", entry_style))
         Story.append(Spacer(1, 12))
         Story.append(Paragraph(f"<strong>Analysis:</strong> {analysis}", analysis_style))
-        
+
         # Add image if available
-        image_path = metadata.get('image', None)
+        image_path = dream.get('image', None)  # Fetching from dream dictionary directly
         if image_path:
             Story.append(Spacer(1, 12))
             Story.append(Image(image_path, 200, 200))  # Image width and height
