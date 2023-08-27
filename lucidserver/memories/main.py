@@ -336,6 +336,7 @@ def export_memory_to_json(include_embeddings=True, userEmail=None):
                 collections_dict[collection_name].append(memory)
     return collections_dict
 
+
 def export_dreams_to_json_file(path="./dreams.json", userEmail=None):
     collections_dict = export_memory_to_json(include_embeddings=False, userEmail=userEmail)
     dreams = collections_dict.get('dreams', [])
@@ -346,9 +347,16 @@ def export_dreams_to_pdf(path="./dreams.pdf", userEmail=None):
     collections_dict = export_memory_to_json(include_embeddings=False, userEmail=userEmail)
     dreams = collections_dict.get('dreams', [])
     
-    # Filter the dreams based on userEmail
-    filtered_dreams = [dream for dream in dreams if dream.get('metadata', {}).get('userEmail') == userEmail]
-    
+    # Filter the dreams based on userEmail and specific title, entry, and analysis
+    filtered_dreams = [
+        dream for dream in dreams 
+        if dream.get('metadata', {}).get('userEmail') == userEmail and not (
+            dream.get('metadata', {}).get('title', '') == 'Dream Title' and
+            dream.get('metadata', {}).get('entry', '') == 'Dream Entry' and
+            dream.get('metadata', {}).get('analysis', 'No analysis available.') == 'No analysis available.'
+        )
+    ]
+
     # Set up the PDF document
     doc = SimpleDocTemplate(path, pagesize=letter)
     Story = []
@@ -360,7 +368,7 @@ def export_dreams_to_pdf(path="./dreams.pdf", userEmail=None):
     entry_style = styles['BodyText']
     analysis_style = styles['Justify']
 
-    for dream in filtered_dreams:  # <-- Use filtered_dreams here
+    for dream in filtered_dreams:  # <-- Using filtered_dreams here
         title = dream['metadata']['title']
         entry = dream['metadata']['entry']
         analysis = dream['metadata'].get('analysis', 'No analysis available.')  # Get analysis if available
