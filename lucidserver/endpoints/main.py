@@ -67,6 +67,10 @@ def register_endpoints(app):
         "title": fields.Str(required=True),
         "date": fields.Str(required=True),
         "entry": fields.Str(required=True),
+        "symbols": fields.Str(),  # Optional
+        "lucidity": fields.Int(),  # Optional, scaler 1-5
+        "characters": fields.Str(),  # Optional
+        "emotions": fields.Str(),  # Optional
         "id_token": fields.Str(required=True),
     }
 
@@ -105,7 +109,18 @@ def register_endpoints(app):
             log(f"Received args: {args}", type="debug")
             log(f"Received userEmail: {userEmail}", type="debug")
 
-            dream_data = create_dream(args["title"], args["date"], args["entry"], userEmail)
+            # Pass along the newly added optional fields to `create_dream` function
+            dream_data = create_dream(
+                args["title"], 
+                args["date"], 
+                args["entry"], 
+                userEmail,
+                None,  # details, which you don't seem to use
+                args.get("symbols"),
+                args.get("lucidity"),
+                args.get("characters"),
+                args.get("emotions")
+            )
             
             if dream_data is None or "id" not in dream_data:
                 raise RuntimeError(f"Dream creation failed with data {args}")

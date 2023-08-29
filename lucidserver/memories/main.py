@@ -9,7 +9,7 @@ from agentmemory import create_memory, get_memories, update_memory, get_memory, 
 from lucidserver.actions import generate_dream_analysis, generate_dream_image, get_image_summary
 
 
-def create_dream(title, date, entry, userEmail):
+def create_dream(title, date, entry, userEmail, details=None, symbols=None, lucidity=None, characters=None, emotions=None):
     try:
         # Step 1: Initial log to confirm function entry
         log(f"Entering create_dream function with title: {title}, date: {date}, entry: {entry}, userEmail: {userEmail}", type="debug")
@@ -20,6 +20,10 @@ def create_dream(title, date, entry, userEmail):
             "date": date,
             "entry": entry,
             "useremail": userEmail,
+            "symbols": symbols,
+            "lucidity": lucidity,
+            "characters": characters,
+            "emotions": emotions
         }
         # Log the constructed metadata
         log(f"Constructed metadata: {metadata}", type="debug")
@@ -91,6 +95,10 @@ def get_dream(dream_id):
             "date": dream["metadata"]["date"],
             "entry": dream["metadata"]["entry"],
             "useremail": dream["metadata"]["useremail"],
+            "symbols": dream["metadata"].get("symbols"),
+            "lucidity": dream["metadata"].get("lucidity"),
+            "characters": dream["metadata"].get("characters"),
+            "emotions": dream["metadata"].get("emotions")
         }
     }
 
@@ -127,6 +135,10 @@ def get_dreams(userEmail):
                     "date": memory["metadata"]["date"],
                     "entry": memory["metadata"]["entry"],
                     "useremail": memory["metadata"]["useremail"],
+                    "symbols": memory["metadata"].get("symbols"),
+                    "lucidity": memory["metadata"].get("lucidity"),
+                    "characters": memory["metadata"].get("characters"),
+                    "emotions": memory["metadata"].get("emotions")  # Newly added
                 }
             }
             # Optionally, extract analysis and image from metadata if present
