@@ -142,11 +142,12 @@ def get_dreams(userEmail):
     return dreams
 
 
-def get_dream_analysis(dream_id, max_retries=5):
+def get_dream_analysis(dream_id, intelligence_level='general', max_retries=5):
     """Fetch analysis for a dream.
 
     Args:
         dream_id (str): ID of the dream.
+        intelligence_level (str, optional): Level of intelligence for analysis. Defaults to 'general'.
         max_retries (int, optional): Maximum number of retries. Defaults to 5.
 
     Returns:
@@ -157,7 +158,7 @@ def get_dream_analysis(dream_id, max_retries=5):
         dream = get_dream(dream_id)
         for _ in range(max_retries):
             analysis = generate_dream_analysis(
-                dream["metadata"]["entry"], "You are dreaming about"
+                dream["metadata"]["entry"], "You are dreaming about", intelligence_level
             )
             if analysis:
                 return analysis

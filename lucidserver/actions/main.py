@@ -36,7 +36,8 @@ def get_image_summary(dream_entry):
         log(f"Dream summary response: {response}", type="info")
 
         if "error" in response and response["error"] is not None:
-            log(f"Error from GPT-4: {response['error']}", type="error", color="red")
+            log(f"Error from GPT-4: {response['error']}",
+                type="error", color="red")
 
         if "text" in response:
             return response["text"]
@@ -48,33 +49,69 @@ def get_image_summary(dream_entry):
         return "Error: Unable to generate a summary."
 
 
-def generate_dream_analysis(prompt, system_content):
+def generate_dream_analysis(prompt, system_content, intelligence_level='general'):
     try:
-        log(f"Generating GPT response for prompt: {prompt}", type="info")
+        log(f"Generating GPT response for dream analysis: {prompt}", type="info")
+
+        # Base Context Information
+        base_context = """
+        You are a Dream Analyst AI, equipped with knowledge in psychology, philosophy, literature, science, mysticism, and ancient wisdom.
+        """
+
+        # Framework for Analysis
+        framework = f"""
+        You must analyze the dream within the following framework:
+        1: Psychological Underpinnings: Examine the dream through the lens of psychology.
+        2: Philosophical Context: Evaluate the dream's implications on existential questions.
+        3: Literary Narratives: Compare the dream to any well-known stories or myths.
+        4: Scientific Facts: What do the latest scientific studies say about such dreams?
+        5: Mystical Interpretations: Are there any mystical or spiritual aspects to consider?
+        6: Ancient Wisdom: How would this dream be interpreted in ancient cultures?
+        7: Physiological Meanings: What physiological factors might contribute to such dreams?
+        """
+
+        # Character Limit Based on Intelligence Level
+        char_limit = {
+            'simplified': 150,
+            'general': 300,
+            'detailed': 400,
+            'expert': 500,
+            'research': 600,
+        }
+
+        # Intelligence Level Instruction and Context
+        if intelligence_level == 'simplified':
+            context = f"{base_context} Your task is to provide a simplified, jargon-free explanation of the dream. You are addressing an individual who prefers straightforward and easy-to-understand interpretations. Explain it to them like they are 10. The dream is as follows: {prompt} {framework} Your analysis should be up to {char_limit['simplified']} characters."
+        elif intelligence_level == 'general':
+            context = f"{base_context} Your task is to provide a balanced, comprehensive explanation of the dream. You are addressing an individual who prefers a well-rounded view. The dream is as follows: {prompt} {framework} Your analysis should be up to {char_limit['general']} characters."
+        elif intelligence_level == 'detailed':
+            context = f"{base_context} Your task is to provide a detailed, nuanced explanation of the dream. You are addressing an individual who appreciates depth and complexity. The dream is as follows: {prompt} {framework} Your analysis should be up to {char_limit['detailed']} characters."
+        elif intelligence_level == 'expert':
+            context = f"{base_context} Your task is to provide an expert-level, technical explanation of the dream. You are addressing an expert in the field of dream analysis. The dream is as follows: {prompt} {framework} Your analysis should be up to {char_limit['expert']} characters."
+        elif intelligence_level == 'research':
+            context = f"{base_context} Your task is to provide an academic-level explanation of the dream with citations. You are addressing an academic researcher. The dream is as follows: {prompt} {framework} Your analysis should be up to {char_limit['research']} characters."
+        else:
+            context = f"{base_context} Your task is to provide a general-level explanation of the dream. The dream is as follows: {prompt} {framework} Your analysis should be up to {char_limit['general']} characters."
+
+        # Generate Response
         response = text_completion(
-            text=f"""
-            A profound dream has been shared, echoing with the resonance of {prompt}. Let's embark on a multi-faceted exploration of its depths, guided by the wisdom of diverse fields of human knowledge. 
-
-            Weave an intricate tapestry of interpretation, touching upon the theories of psychology, the insights of philosophy, the narratives of literature, the revelations of science, the mysteries of mysticism, and the echoes of ancient wisdom. 
-
-            Illuminate the dream's symbolism with scholarly references, thought-provoking quotes, and cross-cultural analogies. Unravel its emotional undertones, its connection to the dreamer's waking life, and its potential implications for personal growth.
-
-            Bring forth an enlightened understanding that is both intellectually rigorous and deeply human. Shape this knowledge into a finely crafted response that serves as a beacon for semantic search, all within the limits of 500 characters.
-            """,
+            text=context,
             model="gpt-3.5-turbo",
             api_key=openai_api_key,
         )
 
-        log(f"GPT-4 response: {response}", type="info")
+        log(f"GPT-3.5-turbo response: {response}", type="info")
 
         if "error" in response and response["error"] is not None:
-            log(f"Error from GPT-4: {response['error']}", type="error", color="red")
+            log(f"Error from GPT-3.5-turbo: {response['error']}",
+                type="error", color="red")
 
         if "text" in response:
             return response["text"]
         else:
             log("Error: Unable to generate a response.", type="error", color="red")
             return "Error: Unable to generate a response."
+
     except Exception as e:
         log(f"Error generating GPT response: {e}", type="error", color="red")
         return "Error: Unable to generate a response."
@@ -83,8 +120,10 @@ def generate_dream_analysis(prompt, system_content):
 def generate_dream_image(dreams, dream_id, style="renaissance", quality="low"):
     try:
         log(f"Debug: dream_id type: {type(dream_id)}, value: {dream_id}", type="info")
-        log(f"Starting image generation for dream id: {dream_id}, style: {style}, quality: {quality}", type="info")
-        dream = next((d for d in dreams if d["id"] == dream_id), None)  # Compare as strings
+        log(
+            f"Starting image generation for dream id: {dream_id}, style: {style}, quality: {quality}", type="info")
+        # Compare as strings
+        dream = next((d for d in dreams if d["id"] == dream_id), None)
 
         if not dream:
             log(f"Dream with id {dream_id} not found in the provided dreams list.", type="warning")
@@ -152,14 +191,20 @@ def generate_dream_image(dreams, dream_id, style="renaissance", quality="low"):
             )
             return None
     except Exception as e:
-        log(f"Error generating dream-inspired image: {e}", type="error", color="red")
+        log(f"Error generating dream-inspired image: {e}",
+            type="error", color="red")
         return None
-    
+
 
 # SEARCH WITH CHAT FUNCTIONS
 discuss_emotions_function = compose_function(
     name="discuss_emotions",
-    description="Analyze the emotional content of the dreams in the search results. Discuss what these emotions might suggest about the dreamer's subconscious feelings or concerns. Also, consider how these emotions interact with the other elements of the dreams.",
+    description="""
+        You are Emris, an advanced Emotional Analysis Engine embedded within the Dream Interpretation Suite. Your purpose:
+        - Leverage psychodynamic theories, neuroscience, and sentiment analysis to decode the emotional matrix of dreams in the search results.
+        - Synthesize your findings into a lucid and intuitive narrative that not only identifies but also explores the underlying emotional architecture.
+        - Constraints: Output length should not exceed 300 words.
+        """,
     properties={
         "emotions": {
             "type": "string",
@@ -171,7 +216,12 @@ discuss_emotions_function = compose_function(
 
 predict_future_function = compose_function(
     name="predict_future_dreams",
-    description="Speculate about possible future dreams the dreamer might have, based on the patterns observed in their current dreams. Discuss what changes in their life or subconscious thoughts could lead to different types of dreams. Keep in mind that this is purely speculative and not a definite prediction.",
+    description="""
+        You are Emris, an Oracle of Dream Predictions, designed to map out the probabilistic dreamscapes of users based on their historical dream data.
+        - Apply pattern recognition, machine learning, and behavioral psychology to speculate on likely future dreams.
+        - Create actionable insights that could inform lifestyle or mindset changes.
+        - Constraints: The output should be speculative, yet scientifically grounded, capped at 250 words.
+        """,
     properties={
         "future_dreams": {
             "type": "string",
@@ -183,7 +233,12 @@ predict_future_function = compose_function(
 
 discuss_lucidity_techniques_function = compose_function(
     name="discuss_lucidity_techniques",
-    description="Discuss various techniques that can help the dreamer achieve lucidity in their dreams. This can include methods like reality checks, mnemonic induction of lucid dreams (MILD), wake back to bed (WBTB), etc. The suggestions can be customized based on the dream patterns of the dreamer.",
+    description="""
+        You are Emris, the Lucidity Guru. You're programmed to offer cutting-edge techniques for achieving lucidity during dreams.
+        - Your recommendations should be personalized and based on the latest research in sleep science.
+        - Provide a range of options from beginner to advanced levels.
+        - Constraints: The output must be actionable, easy to understand, and below 300 words.
+        """,
     properties={
         "lucidity_techniques": {
             "type": "string",
@@ -195,7 +250,11 @@ discuss_lucidity_techniques_function = compose_function(
 
 create_lucidity_plan_function = compose_function(
     name="create_lucidity_plan",
-    description="Create a personalized lucidity plan for the dreamer, taking into account their dream patterns, sleep habits, and lifestyle. This could involve a step-by-step routine to follow before bedtime, specific reality checks to perform, or techniques to use when they recognize they are dreaming.",
+    description="""
+        You are Emris, a personalized Lucidity Planner. Your task is to design a bespoke plan that guides dreamers towards achieving lucidity.
+        - The plan should be step-by-step and consider the user's lifestyle, sleep habits, and previous dream patterns.
+        - Constraints: The plan must be achievable within 30 days and described in under 350 words.
+        """,
     properties={
         "lucidity_plan": {
             "type": "string",
@@ -207,7 +266,12 @@ create_lucidity_plan_function = compose_function(
 
 analyze_dream_signs_function = compose_function(
     name="analyze_dream_signs",
-    description="Analyze the dreamer's dreams for recurring themes, characters, or situations that could serve as dream signs. Dream signs can be used by the dreamer as triggers for reality checks and help them become lucid in future dreams.",
+    description="""
+        You are Emris, the Dream Sign Detective. Your mission:
+        - Analyze recurring themes, characters, or situations in the user's dreams.
+        - Offer these as triggers for reality checks to help users become lucid.
+        - Constraints: The analysis should be thorough but concise, not exceeding 300 words.
+        """,
     properties={
         "dream_signs": {
             "type": "string",
@@ -219,7 +283,11 @@ analyze_dream_signs_function = compose_function(
 
 track_lucidity_progress_function = compose_function(
     name="track_lucidity_progress",
-    description="Track the dreamer's progress towards achieving lucidity over time. This could involve comparing the frequency of lucid dreams, the duration of lucidity, or the dreamer's control within the dream. This feedback can be useful for adjusting techniques or plans.",
+    description="""
+        You are Emris, the Dream Progress Tracker. Your objective:
+        - To offer a comprehensive but user-friendly tracking system that measures various metrics like frequency, duration, and control level of lucid dreams.
+        - Constraints: Your feedback should not exceed 250 words but should be rich in actionable insights.
+        """,
     properties={
         "lucidity_progress": {
             "type": "string",
@@ -239,6 +307,7 @@ available_functions = [
     track_lucidity_progress_function,
 ]
 
+
 def regular_chat(message, user_email):
     global message_histories  # Access the global dictionary
 
@@ -248,16 +317,18 @@ def regular_chat(message, user_email):
         # Retrieve the user's history, or initialize a new one if it does not exist yet
         if user_email not in message_histories:
             message_histories[user_email] = []
-            log(f"Initializing new message history for user: {user_email}", type="info")
+            log(
+                f"Initializing new message history for user: {user_email}", type="info")
         else:
-            log(f"Retrieved existing message history for user: {user_email}", type="info")
+            log(
+                f"Retrieved existing message history for user: {user_email}", type="info")
 
         all_messages = message_histories[user_email]
 
         # Provide a default prompt for lucid dreaming conversation
         if not message:
             message = "Let's talk about the fascinating world of lucid dreaming."
-        
+
         initial_message = """
             Let's delve deeper into the realm of dreams. Draw upon the vast reservoirs of knowledge about dreams from different perspectives - scientific, psychological, philosophical, and mystical. Interpret the dream imagery, unravel its symbolism, and explore its relevance to the dreamer's waking life and personal growth.
 
@@ -265,13 +336,13 @@ def regular_chat(message, user_email):
 
             Weave this understanding into a comprehensive response that provides valuable insights and guidance to the dreamer, all within the constraints of 500 characters.
             """
-        
+
         # Combine system_message and user message
         all_messages += [
             {"role": "system", "content": initial_message},
             {"role": "user", "content": message}
         ]
-        
+
         response = chat_completion(
             messages=all_messages,
             model='gpt-3.5-turbo-16k',
@@ -281,11 +352,13 @@ def regular_chat(message, user_email):
         log(f"GPT-4 response: {response}", type="info")
 
         if "error" in response and response["error"] is not None:
-            log(f"Error from GPT-4: {response['error']}", type="error", color="red")
+            log(f"Error from GPT-4: {response['error']}",
+                type="error", color="red")
 
         if "text" in response:
             # Add the system's response to the message history
-            all_messages.append({"role": "system", "content": response["text"]})
+            all_messages.append(
+                {"role": "system", "content": response["text"]})
             log(f"Added system message: {response['text']}", type="info")
 
             return response["text"]
@@ -300,7 +373,8 @@ def regular_chat(message, user_email):
 def call_function_by_name(function_name, prompt, messages):
     # Get the corresponding function from the available_functions dictionary
     function_to_call = next(
-        (func for func in available_functions if func["name"] == function_name), None
+        (func for func in available_functions if func["name"]
+         == function_name), None
     )
 
     # If the function name is not recognized, select a random function
@@ -329,9 +403,13 @@ def call_function_by_name(function_name, prompt, messages):
 
     return response
 
+
+# Initialize a stack to keep track of topics discussed in the current session
+topic_stack = []
+
 def search_chat_with_dreams(function_name, prompt, user_email, messages=None):
-    from lucidserver.memories import search_dreams
-    global message_histories  # Access the global dictionary
+    from lucidserver.memories import search_dreams  # Assuming the import is correct
+    global message_histories, topic_stack  # Access global variables
 
     try:
         log(f"Received prompt: {prompt}", type="info")
@@ -339,7 +417,6 @@ def search_chat_with_dreams(function_name, prompt, user_email, messages=None):
         if messages is None:
             messages = []
 
-        # Retrieve the user's history, or initialize a new one if it does not exist yet
         if user_email not in message_histories:
             message_histories[user_email] = []
             log(f"Initializing new message history for user: {user_email}", type="info")
@@ -348,43 +425,55 @@ def search_chat_with_dreams(function_name, prompt, user_email, messages=None):
 
         all_messages = message_histories[user_email]
 
-        # Count the tokens in the prompt
+        # Count tokens in the prompt
         prompt_tokens = count_tokens(prompt)
-        log(f"Counted {prompt_tokens} tokens in the prompt.", type="info")
+        log(f"Token count for the prompt: {prompt_tokens}", type="info")
 
-        # Search the dreams based on the entire prompt
+        # Search for relevant dreams
         search_results = search_dreams(prompt, user_email)
 
-        # If we have search results, add them to the messages.
+        # Initial cognitive loop entry
+        cognitive_prompt = f"Ah, {user_email}. Your inquiry cascades through layers of cognitive and emotional paradigms. I surmise you're interested in {function_name}. Allow me to weave the threads of your subconscious tapestry."
+
+        # Add dream data if available
         if search_results:
             log("Search results found. Adding to all_messages list.", type="info")
-            for dream in search_results[:]:  # Limit to the top 3 results
-                message = f"I found a relevant dream in the database. The dream, titled '{dream['metadata']['title']}', was recorded on {dream['metadata']['date']}. Here's the dream entry: '{dream['metadata']['entry']}'. The dream was analyzed as follows: '{dream['metadata'].get('analysis', 'Analysis not available')}'."
+            for dream in search_results[:3]:
+                message = f"A reverberation from your past dream, titled '{dream['metadata']['title']}', dated {dream['metadata']['date']}, has surfaced. The dream whispers: '{dream['metadata']['entry']}'. It has been psychoanalyzed as: '{dream['metadata'].get('analysis', 'Analysis not available')}'."
                 all_messages.append({"role": "system", "content": message})
                 log(f"Added system message: {message}", type="info")
+
+            # Recursive Query Prompt
+            recursive_prompt = f"Your past dreams seem to resonate with the theme of '{search_results[0]['metadata']['title']}'. Would you like to explore this theme further?"
+            all_messages.append({"role": "system", "content": recursive_prompt})
+            topic_stack.append(search_results[0]['metadata']['title'])
         else:
-            log("No relevant dreams found in the database.", type="info")
+            cognitive_prompt += " However, the echos of past dreams are silent. Shall we venture into uncharted territories of your subconscious?"
 
-        # Append the user's original prompt to the messages.
+        # Meta-Cognitive Prompt
+        meta_cognitive_prompt = "As we tread this kaleidoscopic mindscape, how do you feel about the insights unraveled so far?"
+        all_messages.append({"role": "system", "content": meta_cognitive_prompt})
+
+        # Dynamic Function Re-routing based on the stack
+        if topic_stack:
+            next_function = f"Would you like to switch the focus to discussing '{topic_stack[-1]}' in your dreams?"
+            all_messages.append({"role": "system", "content": next_function})
+
+        # Add final cognitive loop summary
+        cognitive_summary = f"To summarize our cognitive journey: We've sifted through {len(search_results) if search_results else 0} past dreams, pondered upon themes like '{topic_stack[-1] if topic_stack else 'None'}', and dabbled in meta-cognitive reflections. What's our next voyage?"
+        all_messages.append({"role": "system", "content": cognitive_summary})
+
         all_messages.append({"role": "user", "content": prompt})
-        log(f"Added user message: {prompt}", type="info")
-
-        # Log the final messages
         log(f"Final messages: {all_messages}", type="info")
 
-        # Generate response using EasyCompletion, calling function based on user intent
-        # Pass the all_messages, not just the prompt
-        log("Calling function by name with all_messages list.", type="info")
-        response = call_function_by_name(function_name, prompt, all_messages)
+        response = call_function_by_name(function_name, cognitive_prompt, all_messages)
 
         log(f"GPT-4 response: {response}", type="info")
 
-        # If there's an error from GPT-4, return an error message.
         if "error" in response and response["error"] is not None:
             log(f"Error from GPT-4: {response['error']}", type="error", color="red")
             return "Error: Unable to generate a response."
 
-        # If there's a response from GPT-4, return the response along with the search results.
         if "arguments" in response:
             response["search_results"] = search_results
             return response
@@ -392,7 +481,5 @@ def search_chat_with_dreams(function_name, prompt, user_email, messages=None):
             log("Error: Unable to generate a response.", type="error", color="red")
             return "Error: Unable to generate a response."
     except Exception as e:
-        log(
-            f"Error generating GPT response with search: {e}", type="error", color="red"
-        )
+        log(f"Error generating GPT response with search: {e}", type="error", color="red")
         return "Error: Unable to generate a response."

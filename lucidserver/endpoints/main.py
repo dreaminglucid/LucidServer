@@ -62,8 +62,6 @@ def handle_jwt_token(func):
 
 # Define all your endpoints here, and use the app object passed as an argument to bind them
 def register_endpoints(app):
-    # Placeholder for user's image style preferences
-    user_style_preferences = {}
 
     dream_args = {
         "title": fields.Str(required=True),
@@ -89,9 +87,15 @@ def register_endpoints(app):
     search_args = {
         "query": fields.Str(required=True),
     }
+    
+        # Placeholder for user's image style preferences
+    user_style_preferences = {}
 
     # Placeholder for user's image style preferences
     user_style_preferences = {}
+    
+    # Store user preferences, replace with a database in production
+    user_intelligence_preferences = {}
 
     @app.route("/api/dreams", methods=["POST"], endpoint='create_dream_endpoint')
     @handle_jwt_token
@@ -167,15 +171,34 @@ def register_endpoints(app):
     @app.route("/api/dreams/<string:dream_id>/analysis", methods=["GET"])
     @handle_jwt_token
     def get_dream_analysis_endpoint(dream_id, userEmail):
+        # Get intelligence_level from request args, if not available use saved preference or default to 'general'
+        saved_intelligence_level = user_intelligence_preferences.get(userEmail, {}).get("level", "general")
+        intelligence_level = request.args.get('intelligence_level', default=saved_intelligence_level, type=str)
+
+        # Log the intelligence level being used for analysis
+        log(f"Using intelligence level '{intelligence_level}' for analysis of dream with id {dream_id} for user {userEmail}.", type="info")
+
         dream = get_dream(dream_id)
         if dream is None or dream["metadata"]["useremail"] != userEmail:
-            log(
-                f"Unauthorized access attempt to dream with id {dream_id} by user {userEmail}.", type="error")
+            log(f"Unauthorized access attempt to dream with id {dream_id} by user {userEmail}.", type="error")
             return jsonify({"error": "Unauthorized access."}), 401
-        analysis = get_dream_analysis(dream_id)
-        log(
-            f"Successfully retrieved analysis for dream_id {dream_id}: {analysis}", type="info")
+
+        analysis = get_dream_analysis(dream_id, intelligence_level)
+        log(f"Successfully retrieved analysis for dream_id {dream_id}: {analysis}", type="info")
         return jsonify(analysis)
+
+    @app.route("/api/user/intelligence-level", methods=["POST"])
+    @handle_jwt_token
+    def update_intelligence_level(userEmail):
+        level = request.json.get("level")
+        if not level:
+            return jsonify({"status": "error", "message": "Intelligence level not provided!"}), 400
+
+        # Log the current intelligence level
+        log(f"Updating intelligence level for user {userEmail} to {level}", type="info")
+
+        user_intelligence_preferences.setdefault(userEmail, {})["level"] = level
+        return jsonify({"status": "success", "message": "Intelligence level updated!"})
 
     @app.route("/api/dreams/<string:dream_id>/image", methods=["GET"])
     @handle_jwt_token
