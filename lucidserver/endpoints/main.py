@@ -71,6 +71,7 @@ def register_endpoints(app):
         "lucidity": fields.Int(),  # Optional, scaler 1-5
         "characters": fields.Str(),  # Optional
         "emotions": fields.Str(),  # Optional
+        "setting": fields.Str(),
         "id_token": fields.Str(required=True),
     }
 
@@ -92,7 +93,7 @@ def register_endpoints(app):
         "query": fields.Str(required=True),
     }
     
-        # Placeholder for user's image style preferences
+    # Placeholder for user's image style preferences
     user_style_preferences = {}
 
     # Placeholder for user's image style preferences
@@ -115,13 +116,13 @@ def register_endpoints(app):
                 args["date"], 
                 args["entry"], 
                 userEmail,
-                None,  # details, which you don't seem to use
                 args.get("symbols"),
                 args.get("lucidity"),
                 args.get("characters"),
-                args.get("emotions")
+                args.get("emotions"),
+                args.get("setting")
             )
-            
+
             if dream_data is None or "id" not in dream_data:
                 raise RuntimeError(f"Dream creation failed with data {args}")
 

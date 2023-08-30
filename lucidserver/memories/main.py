@@ -9,7 +9,7 @@ from agentmemory import create_memory, get_memories, update_memory, get_memory, 
 from lucidserver.actions import generate_dream_analysis, generate_dream_image, get_image_summary
 
 
-def create_dream(title, date, entry, userEmail, details=None, symbols=None, lucidity=None, characters=None, emotions=None):
+def create_dream(title, date, entry, userEmail, symbols=None, lucidity=None, characters=None, emotions=None, setting=None):
     try:
         # Step 1: Initial log to confirm function entry
         log(f"Entering create_dream function with title: {title}, date: {date}, entry: {entry}, userEmail: {userEmail}", type="debug")
@@ -23,7 +23,8 @@ def create_dream(title, date, entry, userEmail, details=None, symbols=None, luci
             "symbols": symbols,
             "lucidity": lucidity,
             "characters": characters,
-            "emotions": emotions
+            "emotions": emotions,
+            "setting": setting
         }
         # Log the constructed metadata
         log(f"Constructed metadata: {metadata}", type="debug")
@@ -98,7 +99,8 @@ def get_dream(dream_id):
             "symbols": dream["metadata"].get("symbols"),
             "lucidity": dream["metadata"].get("lucidity"),
             "characters": dream["metadata"].get("characters"),
-            "emotions": dream["metadata"].get("emotions")
+            "emotions": dream["metadata"].get("emotions"),
+            "setting": dream["metadata"].get("setting")
         }
     }
 
@@ -138,7 +140,8 @@ def get_dreams(userEmail):
                     "symbols": memory["metadata"].get("symbols"),
                     "lucidity": memory["metadata"].get("lucidity"),
                     "characters": memory["metadata"].get("characters"),
-                    "emotions": memory["metadata"].get("emotions")  # Newly added
+                    "emotions": memory["metadata"].get("emotions"),
+                    "setting": memory["metadata"].get("setting")
                 }
             }
             # Optionally, extract analysis and image from metadata if present
@@ -287,13 +290,15 @@ def update_dream_analysis_and_image(dream_id, analysis=None, image=None):
 def search_dreams(keyword, user_email):
     log(f"Searching dreams for keyword: {keyword} and user email: {user_email}.", type="info")
     search_results = search_memory("dreams", keyword, n_results=100)
+    
+    # Adding new fields like symbols, lucidity, characters, emotions to the metadata dictionary
     dreams = [
         {
             "id": memory["id"],
             "document": memory["document"],
             "metadata": {
                 key: memory["metadata"][key]
-                for key in ["date", "title", "entry", "analysis"]
+                for key in ["date", "title", "entry", "analysis", "symbols", "lucidity", "characters", "emotions", "setting"]
                 if key in memory["metadata"]
             },
         }
