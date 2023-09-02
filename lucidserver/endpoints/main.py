@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, Response
+from flask import Flask, request, jsonify, Response, send_file
 from functools import wraps
 import os
 import jwt
@@ -225,14 +225,17 @@ def register_endpoints(app):
                 type="error", color="red")
             return jsonify({"error": f"Dream with id {dream_id} not found."}), 404
         userPreferredStyle = user_style_preferences.get(
-            userEmail, {}).get("style", "renaissance")
+            userEmail, {}).get("style", "3d-model")  # Default to "3D model"
         userPreferredQuality = user_style_preferences.get(
             userEmail, {}).get("quality", "low")
-        image = get_dream_image(
+        image_path = get_dream_image(
             dream_id, userPreferredStyle, userPreferredQuality)
-        log(
-            f"Successfully retrieved image for dream_id {dream_id}", type="info")
-        return jsonify({"image": image})
+        log(f"Successfully retrieved image for dream_id {dream_id}", type="info")
+
+        if image_path is not None and os.path.exists(image_path):
+            return send_file(image_path, mimetype='image/png')
+        else:
+            return jsonify({"error": "Image not found"}), 404
 
     @app.route("/api/user/image-style", methods=["POST"])
     @handle_jwt_token

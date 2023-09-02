@@ -1,6 +1,8 @@
 from agentlogger import log
 import requests
 import json
+import os
+import base64
 import configparser
 import random
 
@@ -18,6 +20,8 @@ config.read("lucidserver/actions/config.ini")
 
 # Get the API key from the config file
 openai_api_key = config.get("openai", "api_key")
+STABILITY_API_KEY = config['stability']['api_key']
+STABILITY_API_URL = config['stability']['api_url']
 
 # This dictionary will store the message history for each user
 message_histories = {}
@@ -28,7 +32,7 @@ def get_image_summary(dream_entry):
     try:
         log(f"Generating summary for dream entry: {dream_entry}", type="info")
         response = text_completion(
-            text=f"Awaken to the depths of your subconscious, where dreams transcend reality. Describe the enigmatic tale of your nocturnal journey, where the ethereal dance of {dream_entry} beguiles the senses. Condense this profound experience into a succinct prompt, grounding the essence of your dream in the realms of research, literature, science, mysticism, and ancient wisdom. This prompt will guide the DALLE AI image generation tool by OpenAI, all in under 100 characters.",
+            text=f"Awaken to the depths of the human subconscious, where dreams transcend reality. Summairze the users dream entry: {dream_entry}. Condense this profound experience into a succinct prompt, grounding the essence of the dream in the realms of research, literature, science, mysticism, and ancient wisdom. This prompt will be used to create an image of a dreamscape specifically, it needs to be very accurate to whats actually in the entry. This prompt will guide the stablediffusion image generation tool by stabilityai, all in under 100 characters.",
             model="gpt-3.5-turbo",
             api_key=openai_api_key,
         )
@@ -117,84 +121,89 @@ def generate_dream_analysis(prompt, system_content, intelligence_level='general'
         return "Error: Unable to generate a response."
 
 
-def generate_dream_image(dreams, dream_id, style="renaissance", quality="low"):
+STYLE_DESCRIPTIONS = {
+    "3d-model": "A 3D model of",
+    "analog-film": "An analog film style representation of",
+    "anime": "An anime representation of",
+    "cinematic": "A cinematic representation of",
+    "comic-book": "A comic book style depiction of",
+    "digital-art": "A digital art form of",
+    "enhance": "An enhanced version of",
+    "fantasy-art": "A fantasy art of",
+    "isometric": "An isometric depiction of",
+    "line-art": "A line art of",
+    "low-poly": "A low-poly model of",
+    "modeling-compound": "A modeling compound style of",
+    "neon-punk": "A neon punk style of",
+    "origami": "An origami of",
+    "photographic": "A photographic representation of",
+    "pixel-art": "A pixel art of",
+    "tile-texture": "A tile texture of",
+}
+
+def generate_dream_image(dreams, dream_id, style="3d-model", quality="low"):
     try:
         log(f"Debug: dream_id type: {type(dream_id)}, value: {dream_id}", type="info")
-        log(
-            f"Starting image generation for dream id: {dream_id}, style: {style}, quality: {quality}", type="info")
-        # Compare as strings
+        log(f"Starting image generation for dream id: {dream_id}, style: {style}, quality: {quality}", type="info")
+        
         dream = next((d for d in dreams if d["id"] == dream_id), None)
-
+        
         if not dream:
             log(f"Dream with id {dream_id} not found in the provided dreams list.", type="warning")
             return None
-
+        
         log(f"Found dream with id: {dream_id}. Proceeding with image generation.", type="info")
+        
         summary = get_image_summary(dream["metadata"]["entry"])
         log(f"Image summary obtained: {summary}", type="info")
-
-        # Adjust prompt based on style
-        if style == "renaissance":
-            style_description = "A renaissance painting of"
-        elif style == "abstract":
-            style_description = "An abstract representation of"
-        elif style == "modern":
-            style_description = "A modern artwork of"
-        else:
-            style_description = "A renaissance painting of"  # default
-
+        
+        # Get style description from the STYLE_DESCRIPTIONS dictionary
+        style_description = STYLE_DESCRIPTIONS.get(style, "A 3D model of")  # Default to "3D model"
+        
         log(f"Selected style description: {style_description}", type="info")
-
-        quality_resolution_map = {
-            "low": "256x256",
-            "medium": "512x512",
-            "high": "1024x1024"
-        }
-        resolution = quality_resolution_map.get(quality, "256x256")
-
-        # Log the image quality and resolution
-        log(f"Using image quality: {quality} with resolution: {resolution}", type="info")
-
-        prompt = f"{style_description} {summary}, high quality, lucid dream themed."
+        
+        prompt = f"{style_description} {summary}, realistic landscape, magazine quality, HD 4k, lucid dream themed."
         log(f"Generated prompt: {prompt}", type="info")
-
-        data = {
-            "prompt": prompt,
-            "n": 1,
-            "size": resolution,
-        }
-
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {openai_api_key}",
-        }
-
-        log(f"Sending request to OpenAI API with data: {data}", type="info")
+        
+        # Make a call to the Stability AI API
         response = requests.post(
-            "https://api.openai.com/v1/images/generations",
-            data=json.dumps(data),
-            headers=headers,
+            STABILITY_API_URL,
+            headers={
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "Authorization": f"Bearer {STABILITY_API_KEY}"
+            },
+            json={
+                "text_prompts": [{"text": prompt}],
+                "cfg_scale": 7,
+                "height": 512,
+                "width": 512,
+                "samples": 1,
+                "steps": 30
+            }
         )
 
-        response_data = response.json()
-        log(f"Received response from OpenAI API: {response_data}", type="info")
+        if response.status_code != 200:
+            raise Exception(f"Non-200 response: {response.text}")
 
-        if "data" in response_data and len(response_data["data"]) > 0:
-            image_data = response_data["data"][0]
-            log(f"Generated image URL: {image_data['url']}", type="info")
-            return image_data["url"]
-        else:
-            log(
-                "Error generating dream-inspired image: No data in response",
-                type="error",
-                color="red",
-            )
-            return None
+        data = response.json()
+
+        image_base64 = data["artifacts"][0]["base64"]
+        image_data = base64.b64decode(image_base64)
+
+        if not os.path.exists('./out'):
+            os.makedirs('./out')
+
+        with open(f"./out/generated_dream_image_{dream_id}.png", "wb") as f:
+            f.write(image_data)
+
+        log(f"Generated image saved.", type="info")
+
+        return f"./out/generated_dream_image_{dream_id}.png"
+
     except Exception as e:
-        log(f"Error generating dream-inspired image: {e}",
-            type="error", color="red")
+        log(f"Error generating dream-inspired image: {e}", type="error", color="red")
         return None
-
 
 # SEARCH WITH CHAT FUNCTIONS
 discuss_emotions_function = compose_function(
